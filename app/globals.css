@@ -1,7 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-/* Подключил Roboto */
+@import "tailwindcss";
+
 @layer base {
   :root {
     --font-sans: var(--font-roboto);
