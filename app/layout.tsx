@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Roboto} from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 
 // 1. Инициализируем шрифт
 const roboto = Roboto({
@@ -8,17 +9,20 @@ const roboto = Roboto({
   subsets: ["cyrillic", "latin"],
 });
 
+
 export const metadata: Metadata = {
   title: "SkyFitnessPro",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
+    //передаем состояние авторизации для всех страниц
     <html lang="ru">
-      {/* 2. Применяем roboto.className напрямую к body. */}
       <body className={`${roboto.className} bg-[#FAFAFA] min-h-full flex flex-col`}>
-  {children}
-</body>
+        <AuthProvider>
+        {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

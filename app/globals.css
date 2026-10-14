@@ -5,3 +5,7 @@
     --font-sans: var(--font-roboto);
   }
 }
+
+@theme {
+  --font-montserrat: var(--font-montserrat);
+}

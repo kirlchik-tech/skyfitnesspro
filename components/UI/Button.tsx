@@ -11,7 +11,7 @@ export const Button = ({ variant = 'primary', children, className, ...props }: B
  const primaryStyle = 'bg-[#C6FF00] text-black hover:bg-[#DAFF66] active:bg-black active:text-white disabled:bg-[#F4F5F6] disabled:text-[#D9D9D9]';
   
   // Прозрачная кнопка с рамкой ("Зарегистрироваться")
-  const secondaryStyle = 'bg-transparent border border-black text-black hover:bg-[#F4F5F6] active:bg-[#E9ECED] disabled:border-[#D9D9D9] disabled:text-[#D9D9D9]';
+  const secondaryStyle = 'bg-transparent border border-solid border-black text-black hover:bg-[#F4F5F6] active:bg-[#E9ECED] disabled:border-[#D9D9D9] disabled:text-[#D9D9D9]';
 
   const styles = variant === 'primary' ? primaryStyle : secondaryStyle;
 
