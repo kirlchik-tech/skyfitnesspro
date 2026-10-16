@@ -8,10 +8,10 @@ export const Button = ({ variant = 'primary', children, className, ...props }: B
   const baseStyle = 'rounded-[46px] py-4 px-6 text-[18px] transition-colors font-normal flex justify-center items-center border-none outline-none';
   
   // Салатовая кнопка ("Войти", "Сохранить")
- const primaryStyle = 'bg-[#C6FF00] text-black hover:bg-[#DAFF66] active:bg-black active:text-white disabled:bg-[#F4F5F6] disabled:text-[#D9D9D9]';
+ const primaryStyle = 'bg-[#BCEC30] text-black hover:bg-[#C6FF00] active:bg-black active:text-white disabled:bg-[#F7F7F7] disabled:text-[#999999]';
   
   // Прозрачная кнопка с рамкой ("Зарегистрироваться")
-  const secondaryStyle = 'bg-transparent border border-solid border-black text-black hover:bg-[#F4F5F6] active:bg-[#E9ECED] disabled:border-[#D9D9D9] disabled:text-[#D9D9D9]';
+  const secondaryStyle = 'bg-white border border-solid border-black text-black hover:bg-[#F7F7F7] active:bg-[#E9ECED] disabled:border-[#999999] disabled:text-[#999999]';
 
   const styles = variant === 'primary' ? primaryStyle : secondaryStyle;
 

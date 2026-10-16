@@ -3,9 +3,9 @@ import { Header } from '../../components/UI/Header';
 export default function Home() {
   return (
     <main>
-      <Header isLoggedIn={false} />
+      <Header/>
       <hr className="my-10" />
-      <Header isLoggedIn={true} userName="Кирилл" />
+      <Header />
     </main>
   );
 }

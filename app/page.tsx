@@ -2,13 +2,11 @@ import { CourseCard } from "@/components/UI/CourseCard";
 import { Header } from "@/components/UI/Header";
 import { Button } from "@/components/UI/Button";
 
-const userIsLogged = true; 
-const currentUserName = "Алексей";
 
 export default function Home() {
   return (
     <>
-    <Header isLoggedIn={userIsLogged} userName={currentUserName}/>
+    <Header />
     <main className="max-w-[1160px] w-full  mx-auto flex flex-col"> 
       <div className="flex items-start gap-[20px] mb-[60px] relative">
   <h1 className="font-[500] text-[60px] leading-[100%] tracking-normal">
@@ -25,7 +23,8 @@ export default function Home() {
   <CourseCard title="Бодифлекс" imageSrc="/Purple.png"/>
 </div>
 <div className="w-full flex justify-center mt-[40px]">
-    <Button className="w-[127px] h-[52px] text-[#000000]" variant="primary">
+    <Button className="w-[127px] h-[52px] text-[#000000]" variant="primary"
+    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
       Наверх ↑
     </Button>
   </div>
