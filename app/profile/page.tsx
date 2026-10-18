@@ -1,9 +1,9 @@
-import { Header } from '../../components/UI/Header'; 
+import { Header } from '../../components/UI/Header';
 
 export default function Home() {
   return (
     <main>
-      <Header/>
+      <Header />
       <hr className="my-10" />
       <Header />
     </main>

@@ -4,7 +4,7 @@ import React from 'react';
 import { Button } from './Button';
 import { ProfileIcon } from '../icons/ProfileIcon';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext'; 
+import { useAuth } from '@/context/AuthContext';
 
 
 export const Header = () => {
@@ -12,15 +12,15 @@ export const Header = () => {
   return (
     // Ограничиваем максимальную ширину (max-w-[1160px]) и центрируем (mx-auto).
     <header className="w-full max-w-[1160px] mx-auto flex items-start justify-between pt-[30px] pb-[40px]">
-      
+
       {/* ЛЕВЫЙ БЛОК: Логотип и текст под ним. Используем flex-col для колонки */}
       <div className="flex flex-col gap-[15px]">
-        
+
         {/* логотип svg */}
-           <Link href="/" className="flex items-center w-full">
-  <img src="/Logo.svg" alt="SkyFitnessPro" className="h-[35px] w-auto" />
-           </Link>
-      
+        <Link href="/" className="flex items-center w-full">
+          <img src="/Logo.svg" alt="SkyFitnessPro" className="h-[35px] w-auto" />
+        </Link>
+
 
         <p className="text-[18px] font-normal text-[#000000] opacity-50 tracking-tight">
           Онлайн-тренировки для занятий дома
@@ -32,8 +32,8 @@ export const Header = () => {
       <div>
         {isLoggedIn ? (
           // Если залогинен — показываем аватарку и имя 
-          <div 
-            onClick={logout} 
+          <div
+            onClick={logout}
             title="Нажмите, чтобы выйти"
             className="flex items-center gap-[12px] cursor-pointer"
           >

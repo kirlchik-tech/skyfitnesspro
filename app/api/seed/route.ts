@@ -1,0 +1,59 @@
+import { NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Course } from '@/models/Course';
+
+// Массив курсов
+const coursesData = [
+    {
+        name_id: 'yoga',
+        title: 'Йога',
+        color: '#FFC700',
+        imageSrc: '/Yellow.png',
+        directions: ['Йога для новичков', 'Кундалини-йога', 'Хатха-йога', 'Классическая йога', 'Йогатерапия', 'Аштанга-йога']
+    },
+    {
+        name_id: 'stretching',
+        title: 'Стретчинг',
+        color: '#2491D2',
+        imageSrc: '/Blue.png',
+        directions: ['Растяжка всего тела', 'Шпагат', 'Здоровая спина']
+    },
+    {
+        name_id: 'fitness',
+        title: 'Фитнес',
+        color: '#F7A012',
+        imageSrc: '/Orange.png',
+        directions: ['Кардио', 'Силовые тренировки', 'Жиросжигание']
+    },
+    {
+        name_id: 'step',
+        title: 'Степ-аэробика',
+        color: '#FF7E65',
+        imageSrc: '/Pink.png',
+        directions: ['Ритмика', 'Развитие выносливости']
+    },
+    {
+        name_id: 'bodyflex',
+        title: 'Бодифлекс',
+        color: '#7D458C',
+        imageSrc: '/Purple.png',
+        directions: ['Дыхательные практики', 'Вакуум', 'Подтяжка мышц живота']
+    }
+];
+
+export async function GET() {
+    try {
+        await connectToDatabase();
+
+        // Очищаем старые курсы (на случай если скрипт будет запущен 2 раза)
+        await Course.deleteMany({});
+
+        // Загружаем наш массив в MongoDB
+        await Course.insertMany(coursesData);
+
+        return NextResponse.json({ message: 'Успех! База курсов заполнена.' }, { status: 200 });
+    } catch (error) {
+        console.error("Ошибка сидирования:", error);
+        return NextResponse.json({ message: 'Ошибка при заполнении базы' }, { status: 500 });
+    }
+}

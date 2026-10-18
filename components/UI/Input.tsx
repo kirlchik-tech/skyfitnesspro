@@ -11,17 +11,17 @@ export const MyInput = ({ errorText, className, ...restProps }: MyInputProps) =>
 
   // 3. Базовые классы Tailwind (ширина, паддинги, скругления, рамка по умолчанию)
   const baseInputStyles = "w-[280px] h-[52px] rounded-lg px-[18px] py-[16px] border outline-none ";
-  
+
   // 4. Тернарник с классами Tailwind. Если ошибка есть -> красная рамка, иначе -> серая
   const borderStyles = hasError ? "border-[#DB0030]" : "border-[#D0CECE]";
 
   return (
     // 5. Оборачиваем всё в flex-контейнер, чтобы расположить элементы колонкой
     <div className="flex flex-col gap-2">
-      
-      <input 
+
+      <input
         className={`${baseInputStyles} ${borderStyles} ${className || ''}`}
-        {...restProps} 
+        {...restProps}
       />
 
       {/*6. Условный рендеринг: если hasError === true, рисуем span с текстом */}

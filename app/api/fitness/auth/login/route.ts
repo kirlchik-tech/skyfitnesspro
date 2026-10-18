@@ -15,26 +15,26 @@ export async function POST(request: Request) {
     // 3. Если нашли — пускаем!
     if (user) {
       return NextResponse.json(
-        { 
+        {
           id: user._id, // У MongoDB автоматически создается уникальный _id
-          name: user.name, 
+          name: user.name,
           email: user.email,
           token: 'fake-jwt-token-123'
-        }, 
+        },
         { status: 200 }
       );
     }
 
     // 4. Если не нашли — отказ
     return NextResponse.json(
-      { message: 'Неверный email или пароль' }, 
+      { message: 'Неверный email или пароль' },
       { status: 401 }
     );
 
   } catch (error) {
     console.error("Ошибка БД при логине:", error);
     return NextResponse.json(
-      { message: 'Внутренняя ошибка сервера' }, 
+      { message: 'Внутренняя ошибка сервера' },
       { status: 500 }
     );
   }

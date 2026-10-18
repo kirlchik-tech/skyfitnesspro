@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/UI/Button";
-import { MyInput } from "@/components/UI/Input"; 
+import { MyInput } from "@/components/UI/Input";
 import Link from "next/link"; // Компонент Next.js для ссылок
 import { useAuth } from '@/context/AuthContext';
 
@@ -21,9 +21,9 @@ export default function RegisterPage() {
     setErrorText("");
     //Проверяем пароли ДО запроса к серверу
     if (!email || !password) {
-     setErrorText("Заполните все поля!");
-     return;
-      }
+      setErrorText("Заполните все поля!");
+      return;
+    }
 
     //Провеярем пароли на сходство
     if (password !== repeatPassword) { setErrorText("Пароли не совпадают!"); return; }
@@ -34,9 +34,9 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          email: email, 
-          password: password 
+        body: JSON.stringify({
+          email: email,
+          password: password
         }),
       });
 
@@ -47,8 +47,8 @@ export default function RegisterPage() {
 
       // Если всё отлично, расшифровываем ответ сервера
       const data = await response.json();
-      
-      // Передаем имя (или email) в наш контекст регистрации!
+
+      // Передаем имя (или email) в наш контекст регистрации
       login(data.name || email);
 
     } catch (error: any) {
@@ -59,35 +59,35 @@ export default function RegisterPage() {
   return (
     // Контейнер на весь экран с центрированием
     <div className="min-h-screen w-full flex items-center justify-center bg-[#FAFAFA]">
-      
+
       {/* Белая карточка */}
       <div className="w-[366px] bg-white rounded-[30px] px-[40px] py-[30px] shadow-[0px_4px_67px_-12px_#00000021] flex flex-col items-center">
-        
+
         {/* Логотип */}
         <div className="flex items-center mb-[47px] justify-center w-full">
-  <img src="/Logo.svg" alt="SkyFitnessPro" className="h-[35px] w-auto" />
-</div>
+          <img src="/Logo.svg" alt="SkyFitnessPro" className="h-[35px] w-auto" />
+        </div>
 
         {/* Поля ввода */}
         <div className="w-full flex flex-col gap-[10px] mb-[30px]">
-          <MyInput 
-            type="email" // Для API обычно нужен email
-            placeholder="Эл. почта" 
+          <MyInput
+            type="email" // Для API email
+            placeholder="Эл. почта"
             value={email} // Привязываем значение
             onChange={(e) => setEmail(e.target.value)} // Обновляем стейт при вводе
           />
-          <MyInput 
-            type="password" 
+          <MyInput
+            type="password"
             placeholder="Пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <MyInput 
-            type="password" 
+          <MyInput
+            type="password"
             placeholder="Повторите пароль"
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
-            errorText={errorText} // Прокидываем ошибку (инпут покраснеет!)
+            errorText={errorText} // Прокидываем ошибку (инпут покраснеет)
           />
         </div>
 

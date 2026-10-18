@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto} from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 
@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru">
       <body className={`${roboto.className} bg-[#FAFAFA] min-h-full flex flex-col`}>
         <AuthProvider>
-        {children}
+          {children}
         </AuthProvider>
       </body>
     </html>

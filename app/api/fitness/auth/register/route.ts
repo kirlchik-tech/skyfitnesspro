@@ -10,24 +10,24 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, password } = body;
 
-    // 3. Если почта свободна — создаем нового пользователя
+    // 2. Если почта свободна — создаем нового пользователя
     const newName = email.split('@')[0];
-    
-    // Метод .create сам сохранит данные в MongoDB 
+
+    // 3 Метод .create сам сохранит данные в MongoDB 
     const newUser = await User.create({
       email: email,
-      password: password, 
+      password: password,
       name: newName
     });
 
     // 4. Отвечаем успехом
     return NextResponse.json(
-      { 
+      {
         message: 'Регистрация успешна!',
         name: newUser.name,
         email: newUser.email,
-        token: 'new-user-jwt-token' 
-      }, 
+        token: 'new-user-jwt-token'
+      },
       { status: 201 }
     );
 
