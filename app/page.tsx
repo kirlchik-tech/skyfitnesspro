@@ -17,11 +17,11 @@ export default function Home() {
           <img src="/Text.jpg" alt="Измени свое тело" />
         </div>
         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[40px]">
-          <CourseCard title="Йога" imageSrc="/Yellow.png" />
-          <CourseCard title="Стретчинг" imageSrc="/Blue.png" />
-          <CourseCard title="Фитнес" imageSrc="/Orange.png" />
-          <CourseCard title="Степ-аэробика" imageSrc="/Pink.png" />
-          <CourseCard title="Бодифлекс" imageSrc="/Purple.png" />
+          <CourseCard title="Йога" imageSrc="/Yellow.png" name_id="yoga" />
+          <CourseCard title="Стретчинг" imageSrc="/Blue.png" name_id="stretching" />
+          <CourseCard title="Фитнес" imageSrc="/Orange.png" name_id="fitness" />
+          <CourseCard title="Степ-аэробика" imageSrc="/Pink.png" name_id="step" />
+          <CourseCard title="Бодифлекс" imageSrc="/Purple.png" name_id="bodyflex" />
         </div>
         <div className="w-full flex justify-center mt-[40px] pb-[40px]">
           <ScrollToTop />

@@ -1,19 +1,23 @@
 import React from 'react';
+import Link from 'next/link';
 
 // 1. Описываем, какие данные принимает карточка
 interface CourseCardProps {
   title: string;        // Название 
   imageSrc: string;    //картинка
+  name_id: string;
 }
 
-export const CourseCard = ({ title, imageSrc }: CourseCardProps) => {
+export const CourseCard: React.FC<CourseCardProps> = ({ title, imageSrc, name_id }: CourseCardProps) => {
   return (
     // Главный белый контейнер карточки
     <div className="w-full bg-white rounded-[30px] shadow-[0px_4px_67px_-12px_#00000021] relative transition-transform hover:scale-[1.02]">
       {/* Плюсик в правом верхнем углу картинки (абсолютное позиционирование) */}
-      <button className="absolute top-[20px] right-[20px] z-20 hover:scale-110 transition-transform cursor-pointer">
-        <img src="/Plus.svg" alt="Добавить курс" className="w-[27px] h-[27px]" />
-      </button>
+      <Link href={`/course/${name_id}`}>
+        <button className="absolute top-[20px] right-[20px] z-20 hover:scale-110 transition-transform cursor-pointer">
+          <img src="/Plus.svg" alt="Добавить курс" className="w-[27px] h-[27px]" />
+        </button>
+      </Link>
 
       {/* картинка */}
       <div className={`w-full h-[325px] rounded-[20px] overflow-hidden relative flex justify-center items-end`}>
