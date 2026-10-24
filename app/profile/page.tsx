@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Header } from '@/components/UI/Header';
 import { Button } from '@/components/UI/Button';
 import { PurchasedCourseCard } from '@/components/UI/PurchasedCourseCard';
+import { WorkoutSelectModal } from '@/components/UI/WorkoutSelectModal';
 
 export default function ProfilePage() {
   const { isLoggedIn, user, logout } = useAuth();
@@ -15,6 +16,7 @@ export default function ProfilePage() {
   // Стейт для реальных курсов из БД
   const [myCourses, setMyCourses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedCourseForModal, setSelectedCourseForModal] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -125,13 +127,19 @@ export default function ProfilePage() {
               title={course.title}
               imageSrc={course.imageSrc}
               name_id={course.name_id}
-              progress={0} // Заглушка, позже привяжем к расчету прогресса
-              onRemove={handleRemoveCourse} // Прокидываем функцию удаления
+              progress={0}
+              onRemove={handleRemoveCourse}
+              onStart={(id) => setSelectedCourseForModal(id)}
             />
           ))}
         </div>
 
       </main>
+      {/* Рендерим модалку поверх всего. Если стейт не null — она открыта */}
+      <WorkoutSelectModal
+        isOpen={!!selectedCourseForModal}
+        onClose={() => setSelectedCourseForModal(null)}
+      />
     </>
   );
 }
