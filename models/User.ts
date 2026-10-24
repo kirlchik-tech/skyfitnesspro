@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
+  },
+  // name_id курсов (["yoga", "fitness"])
+  purchasedCourses: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true // Автоматически добавит дату регистрации (createdAt)

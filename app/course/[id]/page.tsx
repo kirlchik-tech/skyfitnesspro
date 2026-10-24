@@ -3,6 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import { Header } from '@/components/UI/Header';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/UI/Button';
 import Link from 'next/link';
 
@@ -15,16 +16,56 @@ interface CourseData {
 }
 
 export default function CoursePage({ params }: { params: Promise<{ id: string }> }) {
-    const { isLoggedIn } = useAuth();
-
+    const { isLoggedIn, user } = useAuth();
     const { id } = use(params);
+    const router = useRouter();
 
     // Стейт для хранения данных курса
     const [course, setCourse] = useState<CourseData | null>(null);
+
     // Стейт для загрузки
     const [isLoading, setIsLoading] = useState(true);
+
     // Стейт для ошибки
     const [error, setError] = useState('');
+
+    // Стейт для загрузки при нажатии на кнопку добавления
+    const [isAdding, setIsAdding] = useState(false);
+
+    //Фунцкия добавления курса
+    const handleAddCourse = async () => {
+        // Проверяем, есть ли у нас email юзера
+        if (!user || !user.email) {
+            console.error("Ошибка: в AuthContext нет данных пользователя (user.email)");
+            alert("Ошибка авторизации. Пожалуйста, перезайдите в аккаунт.");
+            return;
+        }
+
+        setIsAdding(true);
+        try {
+            const res = await fetch('/api/users/add-course', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    courseNameId: id // Передаем id курса из URL (например, "yoga")
+                })
+            });
+
+            if (res.ok) {
+                // Если база успешно сохранила курс — летим в профиль!
+                router.push('/profile');
+            } else {
+                const data = await res.json();
+                alert(data.message || 'Произошла ошибка при добавлении');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Ошибка сети');
+        } finally {
+            setIsAdding(false);
+        }
+    };
 
     // Делаем запрос к нашему API при загрузке страницы
     useEffect(() => {
@@ -151,8 +192,13 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                             </ul>
 
                             {isLoggedIn ? (
-                                <Button className="w-full sm:w-[380px] lg:w-[437px] h-[50px] lg:h-[52px] text-black" variant="primary">
-                                    Добавить курс
+                                <Button
+                                    onClick={handleAddCourse}
+                                    disabled={isAdding} // Блокируем кнопку, пока идет запрос
+                                    className="w-full sm:w-[380px] lg:w-[437px] h-[50px] lg:h-[52px] text-black"
+                                    variant="primary"
+                                >
+                                    {isAdding ? "Добавляем..." : "Добавить курс"}
                                 </Button>
                             ) : (
                                 <Link href="/login">

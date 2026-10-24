@@ -1,46 +1,64 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-// 1. Описываем, какие данные и функции будут доступны во всем приложении
+// тип нашего пользователя(строчный)
+export interface User {
+  email: string;
+  name: string;
+}
+
+// Описываем, какие данные и функции будут доступны во всем приложении
 interface AuthContextType {
   isLoggedIn: boolean;
-  userName: string;
-  login: (name?: string) => void;
+  user: User | null; // храним объект пользователя целиком
+  login: (userData: User) => void; // При логине передаем объект
   logout: () => void;
 }
 
-// 2. Создаем сам контекст
+//  Создаем сам контекст
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 3. Создаем компонент-провайдер, который будет хранить состояние
+//  Создаем компонент-провайдер, который будет хранить состояние
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState('Алексей');
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
-  // Функция входа: меняет стейт и перекидывает на главную
-  const login = (name: string = 'Алексей') => {
+  // Имитация проверки localStorage при загрузке (чтобы не разлогинивало при F5)
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  // Функция входа
+  const login = (userData: User) => {
     setIsLoggedIn(true);
-    setUserName(name);
-    router.push('/'); // редирект на главную страницу после входа
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData)); // Сохраняем, чтобы не сбросилось при F5
+    router.push('/');
   };
 
   // Функция выхода
   const logout = () => {
     setIsLoggedIn(false);
+    setUser(null);
+    localStorage.removeItem('user');
     router.push('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userName, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// 4. Кастомный хук для удобного использования в любом компоненте
+//  Кастомный хук для удобного использования в любом компоненте
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

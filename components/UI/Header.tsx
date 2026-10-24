@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 
 
 export const Header = () => {
-  const { isLoggedIn, userName, logout } = useAuth();
+  const { isLoggedIn, user, logout } = useAuth();
   return (
     // Ограничиваем максимальную ширину (max-w-[1160px]) и центрируем (mx-auto).
     <header className="w-full max-w-[1160px] mx-auto flex items-start justify-between pt-[30px] pb-[40px]">
@@ -35,12 +35,12 @@ export const Header = () => {
           <div
             onClick={logout}
             title="Нажмите, чтобы выйти"
-            className="flex items-center gap-[12px] cursor-pointer"
+            className="flex items-center gap-[17px] cursor-pointer"
           >
-            <div className="w-[42px] h-[42px] bg-[#D9D9D9] rounded-full overflow-hidden flex justify-center items-center">
-              <ProfileIcon color="#FFFFFF" />
+            <div className="w-[42px] h-[42px] bg-[#FFFFFF] rounded-full overflow-hidden flex justify-center items-center">
+              <ProfileIcon color="#D9D9D9" />
             </div>
-            <span className="text-[24px] font-normal text-black">{userName}</span>
+            <span className="text-[24px] font-normal text-black">{user?.name}</span>
             <img src="/Rectangle.svg" alt="Раскрыть меню" />
           </div>
         ) : (

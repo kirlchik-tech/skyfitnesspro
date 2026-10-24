@@ -49,7 +49,7 @@ export default function RegisterPage() {
       const data = await response.json();
 
       // Передаем имя (или email) в наш контекст регистрации
-      login(data.name || email);
+      login({ name: data.name || "Новый пользователь", email: email });
 
     } catch (error: any) {
       // Если что-то пошло не так (неверный пароль или упал интернет)

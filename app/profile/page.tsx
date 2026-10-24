@@ -1,11 +1,137 @@
-import { Header } from '../../components/UI/Header';
+'use client';
 
-export default function Home() {
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { Header } from '@/components/UI/Header';
+import { Button } from '@/components/UI/Button';
+import { PurchasedCourseCard } from '@/components/UI/PurchasedCourseCard';
+
+export default function ProfilePage() {
+  const { isLoggedIn, user, logout } = useAuth();
+  const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  // Стейт для реальных курсов из БД
+  const [myCourses, setMyCourses] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Функция для загрузки купленных курсов
+  const fetchMyCourses = async () => {
+    if (!user?.email) return;
+    try {
+      const res = await fetch('/api/users/my-courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMyCourses(data);
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки курсов", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Вызываем загрузку курсов, когда юзер авторизовался
+  useEffect(() => {
+    if (isClient && isLoggedIn && user) {
+      fetchMyCourses();
+    }
+  }, [isClient, isLoggedIn, user]);
+
+  // Функция удаления курса 
+  const handleRemoveCourse = async (courseNameId: string) => {
+    // 1. Сохраняем копию текущего списка курсов ДО удаления
+    const previousCourses = [...myCourses];
+
+    // 2. Оптимистичное удаление из UI (мгновенно прячем карточку)
+    setMyCourses((prev) => prev.filter(c => c.name_id !== courseNameId));
+
+    try {
+      const res = await fetch('/api/users/remove-course', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user?.email, courseNameId })
+      });
+
+      // Если запрос прошел, но сервер вернул ошибку (например, 500)
+      if (!res.ok) {
+        throw new Error("Сервер не смог удалить курс");
+      }
+    } catch (error) {
+      console.error("Ошибка при удалении:", error);
+
+      // 3. Откат изменений: возвращаем курсы из "слепка" обратно в UI
+      setMyCourses(previousCourses);
+      alert("Не удалось удалить курс. Проверьте интернет и попробуйте еще раз.");
+    }
+  };
+
+  // ЗАЩИТА МАРШРУТА
+  useEffect(() => {
+    if (isClient && !isLoggedIn) {
+      router.push('/login');
+    }
+  }, [isLoggedIn, isClient, router]);
+
+  if (!isClient || !isLoggedIn) {
+    return null;
+  }
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
   return (
-    <main>
+    <>
       <Header />
-      <hr className="my-10" />
-      <Header />
-    </main>
+      <main className="max-w-[1160px] w-full mx-auto flex flex-col pb-[100px] px-4 lg:px-0 mt-[40px]">
+
+        <h1 className="text-[40px] md:text-[48px] font-medium mb-[40px]">
+          Профиль
+        </h1>
+
+        <div className="bg-white w-[1160px] h-[257px] rounded-[30px] p-[30px] shadow-[0px_4px_67px_-12px_#00000021] flex flex-col md:flex-row items-center gap-[33px] mb-[60px]">
+          <div className="w-[197px] h-[197px] overflow-hidden flex items-center justify-center shrink-0">
+            <img src="/Profile.svg" alt="Иконка убрать курс" />
+          </div>
+          <div className="">
+            <h2 className="text-[32px] weight-[500] font-medium mb-[20px]">{user?.name}</h2>
+            <p className="text-[18px] text-black mb-[44px]">Логин: {user?.email}</p>
+            <Button onClick={handleLogout} variant="secondary" className="w-[192px] h-[52px]">
+              Выйти
+            </Button>
+          </div>
+        </div>
+
+        <h2 className="text-[40px] md:text-[48px] font-medium mb-[40px]">
+          Мои курсы
+        </h2>
+
+        {/* СЕТКА ДЛЯ КУПЛЕННЫХ КУРСОВ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[40px]">
+          {myCourses.map((course) => (
+            <PurchasedCourseCard
+              key={course.name_id}
+              title={course.title}
+              imageSrc={course.imageSrc}
+              name_id={course.name_id}
+              progress={0} // Заглушка, позже привяжем к расчету прогресса
+              onRemove={handleRemoveCourse} // Прокидываем функцию удаления
+            />
+          ))}
+        </div>
+
+      </main>
+    </>
   );
 }

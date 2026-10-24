@@ -9,3 +9,18 @@
 @theme {
   --font-montserrat: var(--font-montserrat);
 }
+
+/* Кастомный скроллбар для модалки */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #000;
+  border-radius: 10px;
+}
