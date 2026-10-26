@@ -1,5 +1,4 @@
 import React from 'react';
-import Link from 'next/link';
 import { Button } from './Button';
 
 interface PurchasedCourseCardProps {
@@ -12,30 +11,62 @@ interface PurchasedCourseCardProps {
 }
 
 export const PurchasedCourseCard: React.FC<PurchasedCourseCardProps> = ({ title, imageSrc, name_id, progress, onRemove, onStart }) => {
+
+    const cardImageSrc = imageSrc.replace('s.png', '.png').replace('s.jpg', '.jpg');
+
     return (
         <div className="w-full bg-white rounded-[30px] shadow-[0px_4px_67px_-12px_#00000021] relative flex flex-col overflow-hidden group transition-transform hover:scale-[1.02]">
 
             {/* ИКОНКА МИНУСА (Удаление курса) */}
-            <button onClick={() => onRemove(name_id)} className="absolute top-[20px] right-[20px] z-20 opacity-80 hover:opacity-100 hover:scale-110 transition-all cursor-pointer">
-                <img src="/Minus.svg" alt="Минус" />
+            <button
+                onClick={(e) => {
+                    e.stopPropagation(); // Чтобы клик по минусу не вызвал другие события
+                    onRemove(name_id);
+                }}
+                className="absolute top-[20px] right-[20px] z-20 opacity-80 hover:opacity-100 hover:scale-110 transition-all cursor-pointer"
+            >
+                <img src="/Minus.svg" alt="Удалить" className="w-[27px] h-[27px]" />
             </button>
 
-            {/* Картинка курса */}
-            <div className="w-full h-[325px] rounded-[20px] overflow-hidden relative flex justify-center items-end">
-                <img className="w-full h-full object-contain" src={imageSrc} alt={title} />
+            {/* КАРТИНКА КУРСА */}
+            <div className={`w-full h-[325px] rounded-[20px] overflow-hidden relative flex justify-center items-end`}>
+                <img className="w-full h-full object-cover" src={cardImageSrc} alt={title} />
             </div>
 
-            {/* Текстовый блок и прогресс */}
-            <div className="flex flex-col px-[30px] pt-[20px] pb-[30px]">
+            {/* ТЕКСТОВЫЙ БЛОК (flex-1 и mt-auto прижмут кнопку к низу, если карточки разной высоты) */}
+            <div className="flex flex-col px-[30px] pt-[20px] pb-[30px] flex-1">
                 <h3 className="text-[32px] font-[500] text-black leading-[35px] mb-[20px]">
                     {title}
                 </h3>
 
-                {/* Прогресс бар */}
-                <div className="flex flex-col gap-2 mb-[30px]">
+                {/* ПЛАШКИ С ИНФОРМАЦИЕЙ */}
+                <div className="flex flex-wrap gap-[10px] text-[16px] text-black font-normal mb-[30px]">
+                    <div className="bg-[#F4F5F6] rounded-[50px] px-[14px] py-[6px] flex items-center gap-[6px]">
+                        <span><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 1.5C6 0.671573 5.32843 0 4.5 0C3.67157 0 3 0.671573 3 1.5C1.34315 1.5 0 2.84315 0 4.5H15C15 2.84315 13.6569 1.5 12 1.5C12 0.671573 11.3284 0 10.5 0C9.67157 0 9 0.671573 9 1.5H6Z" fill="#202020" />
+                            <path d="M0 6H15V10.2C15 11.8802 15 12.7202 14.673 13.362C14.3854 13.9265 13.9265 14.3854 13.362 14.673C12.7202 15 11.8802 15 10.2 15H4.8C3.11984 15 2.27976 15 1.63803 14.673C1.07354 14.3854 0.614601 13.9265 0.32698 13.362C0 12.7202 0 11.8802 0 10.2V6ZM9 10.2C9 9.77996 9 9.56994 9.08175 9.40951C9.15365 9.26838 9.26838 9.15365 9.40951 9.08175C9.56994 9 9.77996 9 10.2 9H10.8C11.22 9 11.4301 9 11.5905 9.08175C11.7316 9.15365 11.8463 9.26838 11.9183 9.40951C12 9.56994 12 9.77996 12 10.2V10.8C12 11.22 12 11.4301 11.9183 11.5905C11.8463 11.7316 11.7316 11.8463 11.5905 11.9183C11.4301 12 11.22 12 10.8 12H10.2C9.77996 12 9.56994 12 9.40951 11.9183C9.26838 11.8463 9.15365 11.7316 9.08175 11.5905C9 11.4301 9 11.22 9 10.8V10.2Z" fillRule="evenodd" clipRule="evenodd" fill="#202020" />
+                        </svg></span> 25 дней
+                    </div>
+                    <div className="bg-[#F4F5F6] rounded-[50px] px-[14px] py-[6px] flex items-center gap-[6px]">
+                        <span><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7.5 15C11.6421 15 15 11.6421 15 7.5C15 3.35786 11.6421 0 7.5 0C3.35786 0 0 3.35786 0 7.5C0 11.6421 3.35786 15 7.5 15ZM6.75 3V7.5C6.75 7.91421 7.08579 8.25 7.5 8.25H11.25V6.75H8.25V3H6.75Z" fillRule="evenodd" clipRule="evenodd" fill="#202020" />
+                        </svg></span> 20-50 мин/день
+                    </div>
+                    <div className="bg-[#F4F5F6] rounded-[50px] px-[14px] py-[6px] flex items-center gap-[6px]">
+                        <span><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 2.625C15.2984 2.625 15.5845 2.74353 15.7955 2.9545C16.0065 3.16548 16.125 3.45163 16.125 3.75V14.25C16.125 14.5484 16.0065 14.8345 15.7955 15.0455C15.5845 15.2565 15.2984 15.375 15 15.375C14.7016 15.375 14.4155 15.2565 14.2045 15.0455C13.9935 14.8345 13.875 14.5484 13.875 14.25V3.75C13.875 3.45163 13.9935 3.16548 14.2045 2.9545C14.4155 2.74353 14.7016 2.625 15 2.625Z" fillRule="evenodd" clipRule="evenodd" fill="#D9D9D9" />
+                            <path d="M12 4.875C12.2984 4.875 12.5845 4.99353 12.7955 5.2045C13.0065 5.41548 13.125 5.70163 13.125 6V14.25C13.125 14.5484 13.0065 14.8345 12.7955 15.0455C12.5845 15.2565 12.2984 15.375 12 15.375C11.7016 15.375 11.4155 15.2565 11.2045 15.0455C10.9935 14.8345 10.875 14.5484 10.875 14.25V6C10.875 5.70163 10.9935 5.41548 11.2045 5.2045C11.4155 4.99353 11.7016 4.875 12 4.875Z" fillRule="evenodd" clipRule="evenodd" fill="#D9D9D9" />
+                            <path d="M9 7.125C9.29837 7.125 9.58452 7.24353 9.7955 7.4545C10.0065 7.66548 10.125 7.95163 10.125 8.25V14.25C10.125 14.5484 10.0065 14.8345 9.7955 15.0455C9.58452 15.2565 9.29837 15.375 9 15.375C8.70163 15.375 8.41548 15.2565 8.2045 15.0455C7.99353 14.8345 7.875 14.5484 7.875 14.25V8.25C7.875 7.95163 7.99353 7.66548 8.2045 7.4545C8.41548 7.24353 8.70163 7.125 9 7.125Z" fillRule="evenodd" clipRule="evenodd" fill="#00C1FF" />
+                            <path d="M6 9.375C6.29837 9.375 6.58452 9.49353 6.7955 9.7045C7.00647 9.91548 7.125 10.2016 7.125 10.5V14.25C7.125 14.5484 7.00647 14.8345 6.7955 15.0455C6.58452 15.2565 6.29837 15.375 6 15.375C5.70163 15.375 5.41548 15.2565 5.2045 15.0455C4.99353 14.8345 4.875 14.5484 4.875 14.25V10.5C4.875 10.2016 4.99353 9.91548 5.2045 9.7045C5.41548 9.49353 5.70163 9.375 6 9.375Z" fillRule="evenodd" clipRule="evenodd" fill="#00C1FF" />
+                            <path d="M3 11.625C3.29837 11.625 3.58452 11.7435 3.7955 11.9545C4.00647 12.1655 4.125 12.4516 4.125 12.75V14.25C4.125 14.5484 4.00647 14.8345 3.7955 15.0455C3.58452 15.2565 3.29837 15.375 3 15.375C2.70163 15.375 2.41548 15.2565 2.2045 15.0455C1.99353 14.8345 1.875 14.5484 1.875 14.25V12.75C1.875 12.4516 1.99353 12.1655 2.2045 11.9545C2.41548 11.7435 2.70163 11.625 3 11.625Z" fillRule="evenodd" clipRule="evenodd" fill="#00C1FF" />
+                        </svg></span> Сложность
+                    </div>
+                </div>
+
+                {/* ПРОГРЕСС БАР (mt-auto выталкивает этот блок в самый низ карточки) */}
+                <div className="flex flex-col gap-2 mt-auto mb-[20px]">
                     <span className="text-[18px] font-normal text-black/70">Прогресс {progress}%</span>
                     <div className="w-full h-[10px] bg-[#F4F5F6] rounded-[20px] overflow-hidden">
-                        {/* Динамическая синяя полоска */}
                         <div
                             className="h-full bg-[#00C1FF] rounded-[20px] transition-all duration-500"
                             style={{ width: `${progress}%` }}
@@ -43,7 +74,7 @@ export const PurchasedCourseCard: React.FC<PurchasedCourseCardProps> = ({ title,
                     </div>
                 </div>
 
-                {/* ВЫЗЫВАЕМ ПОПАП ВМЕСТО ПРЯМОГО ПЕРЕХОДА */}
+                {/* КНОПКА (ВЫЗОВ ПОПАПА) */}
                 <Button onClick={() => onStart(name_id)} variant="primary" className="w-full h-[52px] text-black">
                     {progress === 100 ? "Начать заново" : progress > 0 ? "Продолжить" : "Начать тренировки"}
                 </Button>

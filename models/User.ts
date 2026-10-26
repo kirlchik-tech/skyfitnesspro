@@ -20,10 +20,20 @@ const userSchema = new mongoose.Schema({
   purchasedCourses: {
     type: [String],
     default: []
+  },
+  workoutProgress: {
+    type: Object,
+    default: {}
   }
 }, {
-  timestamps: true // Автоматически добавит дату регистрации (createdAt)
+  timestamps: true,
+  minimize: false // Чтобы MongoDB не удаляла пустой объект workoutProgress
 });
+
+// Сбрасываем старый кэш модели в режиме разработки, чтобы схема обновилась
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
 
 //Проверяем, создана ли уже модель User, чтобы не создать её дважды
 export const User = mongoose.models.User || mongoose.model('User', userSchema);

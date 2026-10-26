@@ -127,7 +127,7 @@ export default function ProfilePage() {
               title={course.title}
               imageSrc={course.imageSrc}
               name_id={course.name_id}
-              progress={0}
+              progress={course.calculatedProgress || 0}
               onRemove={handleRemoveCourse}
               onStart={(id) => setSelectedCourseForModal(id)}
             />
@@ -135,10 +135,11 @@ export default function ProfilePage() {
         </div>
 
       </main>
-      {/* Рендерим модалку поверх всего. Если стейт не null — она открыта */}
+      {/* Рендерим модалку поверх всего. Передаем ID выбранного курса */}
       <WorkoutSelectModal
         isOpen={!!selectedCourseForModal}
         onClose={() => setSelectedCourseForModal(null)}
+        courseId={selectedCourseForModal}
       />
     </>
   );

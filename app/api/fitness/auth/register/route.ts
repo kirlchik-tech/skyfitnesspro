@@ -10,6 +10,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, password } = body;
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      return NextResponse.json(
+        { message: 'Введите корректный адрес электронной почты (например, user@mail.ru)' },
+        { status: 400 }
+      );
+    }
+
     // 2. Если почта свободна — создаем нового пользователя
     const newName = email.split('@')[0];
 

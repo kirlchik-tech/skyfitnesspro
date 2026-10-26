@@ -8,19 +8,23 @@
 
 @theme {
   --font-montserrat: var(--font-montserrat);
+  --font-stratos: var(--font-stratos);
+  --font-roboto: var(--font-roboto);
 }
 
-/* Кастомный скроллбар для модалки */
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: transparent;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #000;
+  background: #000000;
+  /* Цвет из Figma */
   border-radius: 10px;
+  /* Скругление из Figma */
 }

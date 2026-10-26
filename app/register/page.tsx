@@ -25,6 +25,12 @@ export default function RegisterPage() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(email.trim())) {
+      setErrorText('Введите корректный email (например, name@mail.ru или name@gmail.com)');
+      return;
+    }
+
     //Провеярем пароли на сходство
     if (password !== repeatPassword) { setErrorText("Пароли не совпадают!"); return; }
 
