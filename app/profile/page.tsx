@@ -96,31 +96,31 @@ export default function ProfilePage() {
   return (
     <>
       <Header />
-      <main className="max-w-[1160px] w-full mx-auto flex flex-col pb-[100px] px-4 lg:px-0 mt-[40px]">
+      <main className="max-w-[1160px] w-full mx-auto flex flex-col items-center md:items-stretch pb-[60px] md:pb-[100px] px-[16px] xl:px-0 mt-[16px] md:mt-[40px]">
 
-        <h1 className="text-[40px] md:text-[48px] font-medium mb-[40px]">
+        <h1 className="w-[343px] md:w-full text-[24px] md:text-[48px] font-medium mb-[24px] md:mb-[40px] leading-[110%]">
           Профиль
         </h1>
 
-        <div className="bg-white w-[1160px] h-[257px] rounded-[30px] p-[30px] shadow-[0px_4px_67px_-12px_#00000021] flex flex-col md:flex-row items-center gap-[33px] mb-[60px]">
-          <div className="w-[197px] h-[197px] overflow-hidden flex items-center justify-center shrink-0">
-            <img src="/Profile.svg" alt="Иконка убрать курс" />
+        <div className="bg-white w-[343px] md:w-full max-w-[1160px] h-auto md:h-[257px] rounded-[30px] p-[30px] shadow-[0px_4px_67px_-12px_#00000021] flex flex-col md:flex-row items-center gap-[30px] md:gap-[33px] mb-[24px] md:mb-[60px]">
+          <div className="w-[141px] h-[141px] md:w-[197px] md:h-[197px] overflow-hidden flex items-center justify-center shrink-0">
+            <img src="/Profile.svg" alt="Иконка убрать курс" className="w-full h-full object-contain" />
           </div>
-          <div className="">
-            <h2 className="text-[32px] weight-[500] font-medium mb-[20px]">{user?.name}</h2>
-            <p className="text-[18px] text-black mb-[44px]">Логин: {user?.email}</p>
-            <Button onClick={handleLogout} variant="secondary" className="w-[192px] h-[52px]">
+          <div className="w-full md:w-auto flex flex-col items-start">
+            <h2 className="text-[24px] md:text-[32px] weight-[500] font-medium mb-[20px] leading-[110%]">{user?.name}</h2>
+            <p className="text-[16px] md:text-[18px] text-black mb-[30px] md:mb-[44px] leading-[110%] break-all">Логин: {user?.email}</p>
+            <Button onClick={handleLogout} variant="secondary" className="w-full md:w-[192px] h-[52px]">
               Выйти
             </Button>
           </div>
         </div>
 
-        <h2 className="text-[40px] md:text-[48px] font-medium mb-[40px]">
+        <h2 className="w-[343px] md:w-full text-[24px] md:text-[48px] font-medium mb-[24px] md:mb-[40px] leading-[110%]">
           Мои курсы
         </h2>
 
         {/* СЕТКА ДЛЯ КУПЛЕННЫХ КУРСОВ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[40px]">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px] md:gap-[40px] justify-items-center md:justify-items-stretch">
           {myCourses.map((course) => (
             <PurchasedCourseCard
               key={course.name_id}

@@ -3,23 +3,26 @@
 import React, { useState } from "react";
 import { Button } from "@/components/UI/Button";
 import { MyInput } from "@/components/UI/Input";
-import Link from "next/link"; // Компонент Next.js для ссылок
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from '@/context/AuthContext';
+import Home from "../page";
 
 export default function RegisterPage() {
   const { login } = useAuth();
+  const router = useRouter();
 
   // Правильно объявляем стейты
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorText, setErrorText] = useState(""); // Для ошибок от сервера
-  const [repeatPassword, setRepeatPassword] = useState("")
+  const [repeatPassword, setRepeatPassword] = useState("");
 
   // Создаем функцию отправки данных
   const handleRegister = async () => {
     // Сбрасываем старую ошибку при новой попытке
     setErrorText("");
-    //Проверяем пароли ДО запроса к серверу
+    // Проверяем пароли ДО запроса к серверу
     if (!email || !password) {
       setErrorText("Заполните все поля!");
       return;
@@ -31,8 +34,11 @@ export default function RegisterPage() {
       return;
     }
 
-    //Провеярем пароли на сходство
-    if (password !== repeatPassword) { setErrorText("Пароли не совпадают!"); return; }
+    // Проверяем пароли на сходство
+    if (password !== repeatPassword) {
+      setErrorText("Пароли не совпадают!");
+      return;
+    }
 
     try {
       const response = await fetch("/api/fitness/auth/register", {
@@ -62,50 +68,61 @@ export default function RegisterPage() {
       setErrorText(error.message);
     }
   };
+
   return (
-    // Контейнер на весь экран с центрированием
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#FAFAFA]">
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* Главная страница на фоне */}
+      <div className="pointer-events-none select-none">
+        <Home />
+      </div>
 
-      {/* Белая карточка */}
-      <div className="w-[366px] bg-white rounded-[30px] px-[40px] py-[30px] shadow-[0px_4px_67px_-12px_#00000021] flex flex-col items-center">
+      {/* Оверлей поверх главной страницы */}
+      <div
+        className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center px-[16px]"
+        onClick={() => router.push('/')}
+      >
+        {/* Белая карточка (343px на мобилке, 366px на ПК) */}
+        <div
+          className="w-[343px] md:w-[366px] bg-white rounded-[30px] px-[31px] md:px-[40px] py-[30px] shadow-[0px_4px_67px_-12px_#00000021] flex flex-col items-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Логотип */}
+          <div className="flex items-center mb-[36px] md:mb-[47px] justify-center w-full">
+            <img src="/Logo.svg" alt="SkyFitnessPro" className="h-[35px] w-auto" />
+          </div>
 
-        {/* Логотип */}
-        <div className="flex items-center mb-[47px] justify-center w-full">
-          <img src="/Logo.svg" alt="SkyFitnessPro" className="h-[35px] w-auto" />
+          {/* Поля ввода */}
+          <div className="w-full flex flex-col gap-[10px] mb-[30px] items-center">
+            <MyInput
+              type="email"
+              placeholder="Эл. почта"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <MyInput
+              type="password"
+              placeholder="Пароль"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <MyInput
+              type="password"
+              placeholder="Повторите пароль"
+              value={repeatPassword}
+              onChange={(e) => setRepeatPassword(e.target.value)}
+              errorText={errorText}
+            />
+          </div>
+
+          {/* Кнопки меняются ролями */}
+          <div className="w-full flex flex-col gap-[10px] items-center">
+            <Button onClick={handleRegister} variant="primary" className="w-[280px] h-[52px]">Зарегистрироваться</Button>
+            {/* Ссылка переведет нас обратно на страницу входа */}
+            <Link href="/login" className="w-full flex justify-center">
+              <Button variant="secondary" className="w-[280px] h-[52px]">Войти</Button>
+            </Link>
+          </div>
         </div>
-
-        {/* Поля ввода */}
-        <div className="w-full flex flex-col gap-[10px] mb-[30px]">
-          <MyInput
-            type="email" // Для API email
-            placeholder="Эл. почта"
-            value={email} // Привязываем значение
-            onChange={(e) => setEmail(e.target.value)} // Обновляем стейт при вводе
-          />
-          <MyInput
-            type="password"
-            placeholder="Пароль"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <MyInput
-            type="password"
-            placeholder="Повторите пароль"
-            value={repeatPassword}
-            onChange={(e) => setRepeatPassword(e.target.value)}
-            errorText={errorText} // Прокидываем ошибку (инпут покраснеет)
-          />
-        </div>
-
-        {/* Кнопки меняются ролями */}
-        <div className="w-full flex flex-col gap-[10px]">
-          <Button onClick={handleRegister} variant="primary" className="w-[280px] h-[52px]">Зарегистрироваться</Button>
-          {/* Ссылка переведет нас обратно на страницу входа */}
-          <Link href="/login" className="w-full">
-            <Button variant="secondary" className="w-[280px] h-[52px]">Войти</Button>
-          </Link>
-        </div>
-
       </div>
     </div>
   );

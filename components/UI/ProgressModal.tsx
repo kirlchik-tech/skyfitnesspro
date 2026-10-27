@@ -24,7 +24,6 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({ isOpen, onClose, e
             setIsSuccess(false);
             setError('');
         }
-
     }, [isOpen]);
 
     // 2. АВТО-ЗАКРЫТИЕ (Если успех = true, ждем 3 секунды и закрываем)
@@ -35,7 +34,6 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({ isOpen, onClose, e
                 onClose(); // Закрываем окно
             }, 3000); // 3000 мс = 3 секунды
         }
-        // Очищаем таймер, если окно закроют вручную раньше времени
         return () => clearTimeout(timer);
     }, [isSuccess, onClose]);
 
@@ -69,16 +67,16 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({ isOpen, onClose, e
 
         const numericValues = values.map(v => Number(v));
         onSubmit(numericValues);
-        setIsSuccess(true); // Включаем галочку (это запустит таймер на 3 секунды)
+        setIsSuccess(true);
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center transition-opacity" onClick={onClose}>
-            <div className="bg-white rounded-[30px] w-[460px] p-[40px] flex flex-col items-center relative" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-[16px] transition-opacity" onClick={onClose}>
+            <div className="bg-white rounded-[30px] w-[343px] md:w-[460px] p-[30px] md:p-[40px] flex flex-col items-center relative" onClick={(e) => e.stopPropagation()}>
 
                 {isSuccess ? (
-                    <div className="flex flex-col items-center justify-center py-[20px]">
-                        <h2 className="font-stratos text-[40px] font-medium text-center leading-[110%] mb-[40px]">
+                    <div className="flex flex-col items-center justify-center py-[10px] md:py-[20px]">
+                        <h2 className="font-stratos text-[32px] md:text-[40px] font-normal text-center leading-[110%] tracking-[0px] lining-nums proportional-nums mb-[30px] md:mb-[40px]">
                             Ваш прогресс<br />засчитан!
                         </h2>
                         <svg width="57" height="57" viewBox="0 0 57 57" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -87,21 +85,21 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({ isOpen, onClose, e
                     </div>
                 ) : (
                     <>
-                        <h2 className="font-stratos text-[32px] font-medium mb-[40px] text-center leading-[110%] w-full text-left">
+                        <h2 className="font-stratos text-[32px] font-normal mb-[30px] md:mb-[40px] leading-[110%] tracking-[0px] lining-nums proportional-nums w-full text-left">
                             Мой прогресс
                         </h2>
 
-                        <div className="w-full flex flex-col gap-[20px] mb-[40px] max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                        <div className="w-full flex flex-col gap-[20px] mb-[30px] md:mb-[40px] max-h-[340px] md:max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                             {exercises.map((ex, index) => {
                                 const exName = ex.name.split(' (')[0];
                                 return (
                                     <div key={index} className="flex flex-col gap-[10px]">
-                                        <label className="font-roboto text-[18px] text-black leading-[110%]">
+                                        <label className="font-roboto text-[16px] md:text-[18px] text-black leading-[110%]">
                                             Сколько раз вы сделали {exName.toLowerCase()}?
                                         </label>
                                         <input
                                             type="number"
-                                            className="w-full border border-[#D0CECE] rounded-[8px] h-[46px] px-[15px] text-[18px] outline-none focus:border-[#BCEC30] transition-colors"
+                                            className="w-full border border-[#D0CECE] rounded-[8px] h-[46px] px-[15px] text-[16px] md:text-[18px] outline-none focus:border-[#BCEC30] transition-colors"
                                             placeholder="0"
                                             value={values[index] ?? ''}
                                             onChange={(e) => handleChange(index, e.target.value)}

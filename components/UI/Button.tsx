@@ -5,7 +5,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = ({ variant = 'primary', children, className, ...props }: ButtonProps) => {
-  const baseStyle = 'rounded-[46px] py-4 px-6 text-[18px] transition-colors font-normal flex justify-center items-center border-none outline-none';
+  const baseStyle = 'rounded-[46px] py-2.5 px-4 md:py-4 md:px-6 text-[16px] md:text-[18px] transition-colors font-normal flex justify-center items-center border-none outline-none';
 
   // Салатовая кнопка ("Войти", "Сохранить")
   const primaryStyle = 'bg-[#BCEC30] text-black hover:bg-[#C6FF00] active:bg-black active:text-white disabled:bg-[#F7F7F7] disabled:text-[#999999]';

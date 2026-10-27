@@ -10,8 +10,8 @@ interface CourseCardProps {
 
 export const CourseCard: React.FC<CourseCardProps> = ({ title, imageSrc, name_id }: CourseCardProps) => {
   return (
-    // Главный белый контейнер карточки
-    <div className="w-full bg-white rounded-[30px] shadow-[0px_4px_67px_-12px_#00000021] relative transition-transform hover:scale-[1.02]">
+    // На мобилке фиксированный размер 343x492 из Figma, а с планшета (md:) возвращаем твой оригинальный w-full h-auto
+    <div className="w-[343px] h-[492px] pb-[15px] md:w-full md:h-auto md:pb-0 bg-white rounded-[30px] shadow-[0px_4px_67px_-12px_#00000021] relative transition-transform hover:scale-[1.02]">
       {/* Плюсик в правом верхнем углу картинки (абсолютное позиционирование) */}
       <Link href={`/course/${name_id}`}>
         <button className="absolute top-[20px] right-[20px] z-20 hover:scale-110 transition-transform cursor-pointer">
@@ -19,35 +19,35 @@ export const CourseCard: React.FC<CourseCardProps> = ({ title, imageSrc, name_id
         </button>
       </Link>
 
-      {/* картинка */}
-      <div className={`w-full h-[325px] rounded-[20px] overflow-hidden relative flex justify-center items-end`}>
-        <img className="w-full h-full object-contain" src={imageSrc} alt={title} />
+      {/* картинка: object-cover object-top на всех экранах убирает белые края и на мобилке, и на планшете */}
+      <div className="w-full h-[325px] rounded-[30px] overflow-hidden relative flex justify-center items-end">
+        <img className="w-full h-full object-cover object-top" src={imageSrc} alt={title} />
       </div>
 
       {/* Текстовый блок */}
-      <div className="flex flex-col gap-[20px] px-[30px] pt-[20px] pb-[30px]">
-        <h3 className="text-[32px] font-[500] text-black leading-tight">
+      <div className="flex flex-col gap-[20px] px-[21px] md:px-[30px] pt-[20px] pb-[15px] md:pb-[30px]">
+        <h3 className="text-[24px] md:text-[32px] font-[500] text-black leading-tight">
           {title}
         </h3>
 
         {/* Плашки с информацией */}
-        <div className="flex flex-wrap gap-[10px] text-[16px] text-black font-normal">
-          <div className="bg-[#F4F5F6] rounded-[50px] px-[14px] py-[6px] flex items-center gap-[6px]">
+        <div className="flex flex-wrap gap-[6px] md:gap-[10px] text-[16px] text-black font-normal">
+          <div className="bg-[#F4F5F6] rounded-[50px] px-[10px] md:px-[14px] py-[6px] flex items-center gap-[6px]">
             {/* Иконка календаря */}
             <span><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M6 1.5C6 0.671573 5.32843 0 4.5 0C3.67157 0 3 0.671573 3 1.5C1.34315 1.5 0 2.84315 0 4.5H15C15 2.84315 13.6569 1.5 12 1.5C12 0.671573 11.3284 0 10.5 0C9.67157 0 9 0.671573 9 1.5H6Z" fill="#202020" />
-              <path d="M0 6H15V10.2C15 11.8802 15 12.7202 14.673 13.362C14.3854 13.9265 13.9265 14.3854 13.362 14.673C12.7202 15 11.8802 15 10.2 15H4.8C3.11984 15 2.27976 15 1.63803 14.673C1.07354 14.3854 0.614601 13.9265 0.32698 13.362C0 12.7202 0 11.8802 0 10.2V6ZM9 10.2C9 9.77996 9 9.56994 9.08175 9.40951C9.15365 9.26838 9.26838 9.15365 9.40951 9.08175C9.56994 9 9.77996 9 10.2 9H10.8C11.22 9 11.4301 9 11.5905 9.08175C11.7316 9.15365 11.8463 9.26838 11.9183 9.40951C12 9.56994 12 9.77996 12 10.2V10.8C12 11.22 12 11.4301 11.9183 11.5905C11.8463 11.7316 11.7316 11.8463 11.5905 11.9183C11.4301 12 11.22 12 10.8 12H10.2C9.77996 12 9.56994 12 9.40951 11.9183C9.26838 11.8463 9.15365 11.7316 9.08175 11.5905C9 11.4301 9 11.22 9 10.8V10.2Z" fillRule="evenodd" clipRule="evenodd" fill="#202020" />
+              <path d="M0 6H15V10.2C15 11.8802 15 12.7202 14.673 13.362C13.3854 13.9265 13.9265 14.3854 13.362 14.673C12.7202 15 11.8802 15 10.2 15H4.8C3.11984 15 2.27976 15 1.63803 14.673C1.07354 14.3854 0.614601 13.9265 0.32698 13.362C0 12.7202 0 11.8802 0 10.2V6ZM9 10.2C9 9.77996 9 9.56994 9.08175 9.40951C9.15365 9.26838 9.26838 9.15365 9.40951 9.08175C9.56994 9 9.77996 9 10.2 9H10.8C11.22 9 11.4301 9 11.5905 9.08175C11.7316 9.15365 11.8463 9.26838 11.9183 9.40951C12 9.56994 12 9.77996 12 10.2V10.8C12 11.22 12 11.4301 11.9183 11.5905C11.8463 11.7316 11.7316 11.8463 11.5905 11.9183C11.4301 12 11.22 12 10.8 12H10.2C9.77996 12 9.56994 12 9.40951 11.9183C9.26838 11.8463 9.15365 11.7316 9.08175 11.5905C9 11.4301 9 11.22 9 10.8V10.2Z" fillRule="evenodd" clipRule="evenodd" fill="#202020" />
             </svg>
             </span> 25 дней
           </div>
-          <div className="bg-[#F4F5F6] rounded-[50px] px-[14px] py-[6px] flex items-center gap-[6px]">
+          <div className="bg-[#F4F5F6] rounded-[50px] px-[10px] md:px-[14px] py-[6px] flex items-center gap-[6px]">
             {/* Иконка часов */}
             <span><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M7.5 15C11.6421 15 15 11.6421 15 7.5C15 3.35786 11.6421 0 7.5 0C3.35786 0 0 3.35786 0 7.5C0 11.6421 3.35786 15 7.5 15ZM6.75 3V7.5C6.75 7.91421 7.08579 8.25 7.5 8.25H11.25V6.75H8.25V3H6.75Z" fillRule="evenodd" clipRule="evenodd" fill="#202020" />
             </svg>
             </span> 20-50 мин/день
           </div>
-          <div className="bg-[#F4F5F6] rounded-[50px] px-[14px] py-[6px] flex items-center gap-[6px]">
+          <div className="bg-[#F4F5F6] rounded-[50px] px-[10px] md:px-[14px] py-[6px] flex items-center gap-[6px]">
             {/* Иконка сложности */}
             <span><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15 2.625C15.2984 2.625 15.5845 2.74353 15.7955 2.9545C16.0065 3.16548 16.125 3.45163 16.125 3.75V14.25C16.125 14.5484 16.0065 14.8345 15.7955 15.0455C15.5845 15.2565 15.2984 15.375 15 15.375C14.7016 15.375 14.4155 15.2565 14.2045 15.0455C13.9935 14.8345 13.875 14.5484 13.875 14.25V3.75C13.875 3.45163 13.9935 3.16548 14.2045 2.9545C14.4155 2.74353 14.7016 2.625 15 2.625Z" fillRule="evenodd" clipRule="evenodd" fill="#D9D9D9" />

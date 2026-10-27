@@ -33,15 +33,15 @@ export const PurchasedCourseCard: React.FC<PurchasedCourseCardProps> = ({ title,
                 <img className="w-full h-full object-cover" src={cardImageSrc} alt={title} />
             </div>
 
-            {/* ТЕКСТОВЫЙ БЛОК (flex-1 и mt-auto прижмут кнопку к низу, если карточки разной высоты) */}
-            <div className="flex flex-col px-[30px] pt-[20px] pb-[30px] flex-1">
-                <h3 className="text-[32px] font-[500] text-black leading-[35px] mb-[20px]">
+            {/* ТЕКСТОВЫЙ БЛОК */}
+            <div className="flex flex-col gap-[20px] px-[21px] md:px-[30px] pt-[20px] pb-[15px] md:pb-[30px]">
+                <h3 className="font-stratos text-[32px] font-normal text-black leading-[110%] tracking-[0px] lining-nums proportional-nums">
                     {title}
                 </h3>
 
                 {/* ПЛАШКИ С ИНФОРМАЦИЕЙ */}
-                <div className="flex flex-wrap gap-[10px] text-[16px] text-black font-normal mb-[30px]">
-                    <div className="bg-[#F4F5F6] rounded-[50px] px-[14px] py-[6px] flex items-center gap-[6px]">
+                <div className="flex flex-wrap gap-[6px] md:gap-[10px] text-[16px] text-black font-normal">
+                    <div className="bg-[#F4F5F6] rounded-[50px] px-[10px] md:px-[14px] py-[6px] flex items-center gap-[6px]">
                         <span><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M6 1.5C6 0.671573 5.32843 0 4.5 0C3.67157 0 3 0.671573 3 1.5C1.34315 1.5 0 2.84315 0 4.5H15C15 2.84315 13.6569 1.5 12 1.5C12 0.671573 11.3284 0 10.5 0C9.67157 0 9 0.671573 9 1.5H6Z" fill="#202020" />
                             <path d="M0 6H15V10.2C15 11.8802 15 12.7202 14.673 13.362C14.3854 13.9265 13.9265 14.3854 13.362 14.673C12.7202 15 11.8802 15 10.2 15H4.8C3.11984 15 2.27976 15 1.63803 14.673C1.07354 14.3854 0.614601 13.9265 0.32698 13.362C0 12.7202 0 11.8802 0 10.2V6ZM9 10.2C9 9.77996 9 9.56994 9.08175 9.40951C9.15365 9.26838 9.26838 9.15365 9.40951 9.08175C9.56994 9 9.77996 9 10.2 9H10.8C11.22 9 11.4301 9 11.5905 9.08175C11.7316 9.15365 11.8463 9.26838 11.9183 9.40951C12 9.56994 12 9.77996 12 10.2V10.8C12 11.22 12 11.4301 11.9183 11.5905C11.8463 11.7316 11.7316 11.8463 11.5905 11.9183C11.4301 12 11.22 12 10.8 12H10.2C9.77996 12 9.56994 12 9.40951 11.9183C9.26838 11.8463 9.15365 11.7316 9.08175 11.5905C9 11.4301 9 11.22 9 10.8V10.2Z" fillRule="evenodd" clipRule="evenodd" fill="#202020" />
@@ -76,7 +76,7 @@ export const PurchasedCourseCard: React.FC<PurchasedCourseCardProps> = ({ title,
 
                 {/* КНОПКА (ВЫЗОВ ПОПАПА) */}
                 <Button onClick={() => onStart(name_id)} variant="primary" className="w-full h-[52px] text-black">
-                    {progress === 100 ? "Начать заново" : progress > 0 ? "Продолжить" : "Начать тренировки"}
+                    {progress >= 100 ? "Начать заново" : progress > 0 ? "Продолжить" : "Начать тренировки"}
                 </Button>
             </div>
         </div>
