@@ -1,6 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/skyfitnesspro';
+const MONGODB_URI = 'mongodb+srv://kirsol20188_db_user:lVU3KW432x3AMRKF@skyfitnespro.yziz7ef.mongodb.net/skyfitnesspro?retryWrites=true&w=majority';
 
 interface MongooseCache {
   conn: Mongoose | null;

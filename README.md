@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Markdown
+# 🏋️‍♂️ SkyFitnessPro — Платформа онлайн-тренировок
 
-## Getting Started
+**SkyFitnessPro** — это современный Full-Stack веб-сервис для домашних тренировок. Платформа позволяет пользователям выбирать курсы (Йога, Фитнес, Стретчинг, Степ-аэробика, Бодифлекс), просматривать видеоуроки и детально отслеживать свой прогресс по каждому упражнению.
 
-First, run the development server:
+---
 
+## 🚀 Живое демо (Live Demo)
+Проект успешно задеплоен и доступен в сети интернет:
+👉 **[Открыть SkyFitnessPro на Vercel](https://skyfitnesspro-three.vercel.app/)**
+
+*(Для быстрой проверки можете зарегистрировать любой тестовый аккаунт, либо использовать уже существующие данные в БД).*
+
+---
+
+## 🔥 Главные преимущества (Особенности реализации)
+
+* 📱 **Pixel-Perfect Адаптивность:** Верстка строго соответствует макету Figma. Интерфейс плавно перестраивается под мобильные устройства (375px), планшеты (768px) и десктопы (1280px+).
+* 🛡️ **Strict TypeScript:** В проекте настроена максимально строгая типизация. В коде **полностью отсутствует тип `any`**, все интерфейсы данных и пропсы компонентов четко описаны.
+* 🔐 **Полноценная авторизация:** Регистрация, вход, валидация email-адресов и защита маршрутов (неавторизованный пользователь не может попасть в личный кабинет).
+* 📊 **Умный трекинг прогресса:** 
+  * Защита от ввода некорректных данных (нельзя заполнить прогресс больше максимума или ввести отрицательные значения).
+  * Динамический перерасчет прогресс-баров в реальном времени.
+  * Возможность сбросить прогресс («Начать заново») при прохождении курса на 100%.
+* ⚡ **Optimistic UI:** Мгновенный отклик интерфейса при удалении курса из профиля или обновлении прогресса, не дожидаясь ответа от сервера.
+* 🧪 **Unit-тестирование:** Ключевая бизнес-логика и UI-компоненты (модалки, расчет процентов, валидация) покрыты тестами с помощью **Vitest**. (Время выполнения 7 тестов < 60 мс).
+
+---
+
+## 🛠 Технологический стек
+
+* **Frontend:** React, Next.js (App Router)
+* **Стилизация:** Tailwind CSS
+* **Язык:** TypeScript
+* **Backend:** Next.js Route Handlers (`/api/...`)
+* **База данных:** MongoDB, Mongoose (MongoDB Atlas Cloud)
+* **Тестирование:** Vitest
+* **Деплой:** Vercel
+
+---
+
+## 💻 Локальный запуск проекта
+
+Так как проект уже настроен на работу с облачной базой данных MongoDB Atlas, локальный запуск занимает всего пару минут. 
+
+### 1. Клонирование репозитория
 ```bash
+git clone [https://github.com/ВАШ_ЛОГИН/skyfitnesspro.git](https://github.com/kirlchik-tech/skyfitnesspro.git)
+cd skyfitnesspro
+2. Установка зависимостей
+Bash
+npm install
+3. Запуск сервера для разработки
+Bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+После этого откройте http://localhost:3000 в вашем браузере.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. (Опционально) Заполнение базы данных
+Если облачная база пуста, вы можете автоматически сгенерировать все курсы и тренировки из встроенного сида. Для этого при запущенном проекте просто перейдите по ссылке:http://localhost:3000/api/seed
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+📋 Проверка тестов и качества кода
+Проект поддерживает автоматическую проверку линтером и тестами:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Запуск юнит-тестов (Vitest):
 
-## Learn More
+Bash
+npx vitest run
+Проверка линтером (ESLint):
 
-To learn more about Next.js, take a look at the following resources:
+Bash
+npm run lint
+Сборка проекта (Production Build):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Bash
+npm run build
