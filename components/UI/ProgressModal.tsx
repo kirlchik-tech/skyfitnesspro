@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 
+export interface Exercise {
+    name: string;
+    quantity: number;
+}
+
 interface ProgressModalProps {
     isOpen: boolean;
     onClose: () => void;
-    exercises: any[];
+    exercises: Exercise[];
     initialValues: number[];
     onSubmit: (values: number[]) => void;
 }
@@ -24,7 +29,7 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({ isOpen, onClose, e
             setIsSuccess(false);
             setError('');
         }
-    }, [isOpen]);
+    }, [isOpen, exercises, initialValues]);
 
     // 2. АВТО-ЗАКРЫТИЕ (Если успех = true, ждем 3 секунды и закрываем)
     useEffect(() => {
@@ -90,7 +95,7 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({ isOpen, onClose, e
                         </h2>
 
                         <div className="w-full flex flex-col gap-[20px] mb-[30px] md:mb-[40px] max-h-[340px] md:max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
-                            {exercises.map((ex, index) => {
+                            {exercises.map((ex: Exercise, index: number) => {
                                 const exName = ex.name.split(' (')[0];
                                 return (
                                     <div key={index} className="flex flex-col gap-[10px]">

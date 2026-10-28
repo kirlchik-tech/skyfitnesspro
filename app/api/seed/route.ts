@@ -2,8 +2,15 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Course } from '@/models/Course';
 
-// Массив курсов
-const coursesData = [
+interface SeedCourse {
+    name_id: string;
+    title: string;
+    color: string;
+    imageSrc: string;
+    directions: string[];
+}
+
+const coursesData: SeedCourse[] = [
     {
         name_id: 'yoga',
         title: 'Йога',
@@ -44,16 +51,11 @@ const coursesData = [
 export async function GET() {
     try {
         await connectToDatabase();
-
-        // Очищаем старые курсы (на случай если скрипт будет запущен 2 раза)
         await Course.deleteMany({});
-
-        // Загружаем наш массив в MongoDB
         await Course.insertMany(coursesData);
 
         return NextResponse.json({ message: 'Успех! База курсов заполнена.' }, { status: 200 });
-    } catch (error) {
-        console.error("Ошибка сидирования:", error);
+    } catch {
         return NextResponse.json({ message: 'Ошибка при заполнении базы' }, { status: 500 });
     }
 }

@@ -1,62 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+
+interface WorkoutExercise {
+    name: string;
+    quantity: number;
+}
 
 interface Workout {
     _id: string;
     name: string;
     course: string;
+    exercises?: WorkoutExercise[];
 }
 
 interface WorkoutSelectModalProps {
     isOpen: boolean;
     onClose: () => void;
-    courseId: string | null; // ID курса, по которому кликнули (например, "yoga")
+    courseId: string | null;
 }
 
 export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, onClose, courseId }) => {
     const router = useRouter();
+    const { user } = useAuth();
     const [workouts, setWorkouts] = useState<Workout[]>([]);
+    const [userProgress, setUserProgress] = useState<Record<string, number[]>>({});
     const [isLoading, setIsLoading] = useState(false);
     const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
 
-
-    // Как только окно открывается и у нас есть courseId — запрашиваем список уроков
     useEffect(() => {
         if (isOpen && courseId) {
-            const fetchWorkouts = async () => {
+            const fetchWorkoutsAndProgress = async () => {
                 setIsLoading(true);
                 try {
-                    // Делаем запрос к внешнему API, используя courseId
                     const res = await fetch(`/api/workouts?course=${courseId}`);
-
                     if (!res.ok) throw new Error('Ошибка загрузки');
 
                     const data = await res.json();
-                    // Предположим, API возвращает объект { data: [...] } или массив напрямую
-                    const fetchedWorkouts = data.data || data;
+                    const fetchedWorkouts: Workout[] = data.data || data;
                     setWorkouts(fetchedWorkouts);
-
-                    // По умолчанию ничего не выбрано, пока пользователь не кликнет
                     setSelectedWorkoutId(null);
-                } catch (error) {
-                    console.error("Ошибка при получении уроков:", error);
+
+                    if (user?.email) {
+                        const resProg = await fetch(`/api/users/progress?email=${encodeURIComponent(user.email)}`, {
+                            cache: 'no-store'
+                        });
+                        if (resProg.ok) {
+                            const progData: Record<string, number[]> = await resProg.json();
+                            setUserProgress(progData);
+                        }
+                    }
+                } catch {
+                    // Ошибка обрабатывается пустым состоянием списка
                 } finally {
                     setIsLoading(false);
                 }
             };
 
-            fetchWorkouts();
+            fetchWorkoutsAndProgress();
         }
-    }, [isOpen, courseId]);
+    }, [isOpen, courseId, user]);
 
-    // Если окно закрыто — не рендерим ничего
     if (!isOpen) return null;
 
-    // Обработчик кнопки "Начать"
+    // Проверяем, выполнена ли тренировка полностью
+    const isWorkoutCompleted = (workout: Workout): boolean => {
+        const saved = userProgress[workout._id];
+        if (!saved || !workout.exercises || workout.exercises.length === 0) return false;
+        return workout.exercises.every((ex, idx) => (Number(saved[idx]) || 0) >= ex.quantity);
+    };
+
     const handleStart = () => {
         if (selectedWorkoutId) {
-            // Перекидываем пользователя на страницу конкретной тренировки
             router.push(`/workout/${selectedWorkoutId}`);
         }
     };
@@ -70,7 +86,6 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, 
                 className="bg-white rounded-[30px] w-[343px] md:w-[460px] p-[30px] md:p-[40px] flex flex-col items-center relative"
                 onClick={(e) => e.stopPropagation()}
             >
-
                 <h2 className="font-stratos text-black text-[32px] font-normal mb-[30px] md:mb-[40px] w-full text-left md:text-center leading-[110%] tracking-[0px] lining-nums proportional-nums">
                     Выберите тренировку
                 </h2>
@@ -83,14 +98,16 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, 
                     ) : (
                         workouts.map((workout, index) => {
                             const isSelected = selectedWorkoutId === workout._id;
+                            const isCompleted = isWorkoutCompleted(workout);
 
                             return (
                                 <div
                                     key={workout._id}
                                     onClick={() => setSelectedWorkoutId(workout._id)}
-                                    className="w-full border-b border-[#C4C4C4] pb-[10px] flex items-center gap-[15px] md:gap-[17px] cursor-pointer hover:bg-gray-50 px-1 transition-colors"
+                                    className={`w-full border-b border-[#C4C4C4] pb-[10px] pt-[6px] flex items-center gap-[15px] md:gap-[17px] cursor-pointer px-2 rounded-t-[8px] transition-colors ${isSelected ? 'bg-[#F4F5F6]' : 'hover:bg-gray-50'
+                                        }`}
                                 >
-                                    {isSelected ? (
+                                    {isSelected || isCompleted ? (
                                         <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
                                             <circle cx="14" cy="14" r="13" stroke="#BCEC30" strokeWidth="2" />
                                             <circle cx="14" cy="14" r="14" fill="#BCEC30" />
@@ -112,7 +129,7 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, 
                                         </span>
                                     </div>
                                 </div>
-                            )
+                            );
                         })
                     )}
                 </div>

@@ -8,14 +8,27 @@ import { Button } from '@/components/UI/Button';
 import { PurchasedCourseCard } from '@/components/UI/PurchasedCourseCard';
 import { WorkoutSelectModal } from '@/components/UI/WorkoutSelectModal';
 
+interface UserCourse {
+  name_id: string;
+  title: string;
+  imageSrc: string;
+  calculatedProgress?: number;
+}
+
+const courseWorkoutIds: Record<string, string[]> = {
+  yoga: ['3yvozj', 'hfgxlo', 'kcx5ai', 'kt6ah4', 'mrhuag'],
+  stretching: ['9mefwq', '9yolz2', 'pi5vtr'],
+  fitness: ['17oz5f', 'pyvaec'],
+  bodyflex: ['xlpkqy', 'gh7bd5', 'hwsut5', 'n18r8v', 't3cpno'],
+  step: ['e9ghsb', 'a1rqtt', 'mstcbg', 'dq9rzo', 'rr70ie'],
+};
+
 export default function ProfilePage() {
   const { isLoggedIn, user, logout } = useAuth();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
-  // Стейт для реальных курсов из БД
-  const [myCourses, setMyCourses] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [myCourses, setMyCourses] = useState<UserCourse[]>([]);
   const [selectedCourseForModal, setSelectedCourseForModal] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,29 +45,23 @@ export default function ProfilePage() {
         body: JSON.stringify({ email: user.email })
       });
       if (res.ok) {
-        const data = await res.json();
+        const data: UserCourse[] = await res.json();
         setMyCourses(data);
       }
-    } catch (error) {
-      console.error("Ошибка загрузки курсов", error);
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // Ошибка сети игнорируется
     }
   };
 
-  // Вызываем загрузку курсов, когда юзер авторизовался
   useEffect(() => {
     if (isClient && isLoggedIn && user) {
       fetchMyCourses();
     }
   }, [isClient, isLoggedIn, user]);
 
-  // Функция удаления курса 
+  // Функция удаления курса
   const handleRemoveCourse = async (courseNameId: string) => {
-    // 1. Сохраняем копию текущего списка курсов ДО удаления
     const previousCourses = [...myCourses];
-
-    // 2. Оптимистичное удаление из UI (мгновенно прячем карточку)
     setMyCourses((prev) => prev.filter(c => c.name_id !== courseNameId));
 
     try {
@@ -64,17 +71,40 @@ export default function ProfilePage() {
         body: JSON.stringify({ email: user?.email, courseNameId })
       });
 
-      // Если запрос прошел, но сервер вернул ошибку (например, 500)
       if (!res.ok) {
-        throw new Error("Сервер не смог удалить курс");
+        throw new Error('Сервер не смог удалить курс');
       }
-    } catch (error) {
-      console.error("Ошибка при удалении:", error);
-
-      // 3. Откат изменений: возвращаем курсы из "слепка" обратно в UI
+    } catch {
       setMyCourses(previousCourses);
-      alert("Не удалось удалить курс. Проверьте интернет и попробуйте еще раз.");
+      alert('Не удалось удалить курс. Проверьте интернет и попробуйте еще раз.');
     }
+  };
+
+  // Обработчик кнопки карточки курса (сброс прогресса при "Начать заново" + открытие модалки)
+  const handleStartOrResetCourse = async (course: UserCourse) => {
+    if ((course.calculatedProgress || 0) >= 100 && user?.email) {
+      // Обнуляем прогресс в UI
+      setMyCourses((prev) =>
+        prev.map((c) => (c.name_id === course.name_id ? { ...c, calculatedProgress: 0 } : c))
+      );
+
+      // Сбрасываем прогресс тренировок этого курса в БД
+      const idsToReset = courseWorkoutIds[course.name_id] || [];
+      try {
+        await fetch('/api/users/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            resetWorkoutIds: idsToReset,
+          }),
+        });
+      } catch {
+        // Игнорируем ошибку сети
+      }
+    }
+
+    setSelectedCourseForModal(course.name_id);
   };
 
   // ЗАЩИТА МАРШРУТА
@@ -129,13 +159,13 @@ export default function ProfilePage() {
               name_id={course.name_id}
               progress={course.calculatedProgress || 0}
               onRemove={handleRemoveCourse}
-              onStart={(id) => setSelectedCourseForModal(id)}
+              onStart={() => handleStartOrResetCourse(course)}
             />
           ))}
         </div>
 
       </main>
-      {/* Рендерим модалку поверх всего. Передаем ID выбранного курса */}
+
       <WorkoutSelectModal
         isOpen={!!selectedCourseForModal}
         onClose={() => setSelectedCourseForModal(null)}

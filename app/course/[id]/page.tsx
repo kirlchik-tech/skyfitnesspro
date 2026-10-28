@@ -36,7 +36,6 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     const handleAddCourse = async () => {
         // Проверяем, есть ли у нас email юзера
         if (!user || !user.email) {
-            console.error("Ошибка: в AuthContext нет данных пользователя (user.email)");
             alert("Ошибка авторизации. Пожалуйста, перезайдите в аккаунт.");
             return;
         }
@@ -59,8 +58,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                 const data = await res.json();
                 alert(data.message || 'Произошла ошибка при добавлении');
             }
-        } catch (error) {
-            console.error(error);
+        } catch {
             alert('Ошибка сети');
         } finally {
             setIsAdding(false);
@@ -78,10 +76,12 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                     throw new Error('Курс не найден');
                 }
 
-                const data = await res.json();
+                const data: CourseData = await res.json();
                 setCourse(data);
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -215,7 +215,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                 <div className="w-[343px] md:w-full mb-[155px] md:mb-[75px]">
                     <h2 className="text-[24px] md:text-[40px] font-semibold leading-[110%]">Направления</h2>
 
-                    {/* СПИСОК ДЛЯ МОБИЛКИ \ */}
+                    {/* СПИСОК ДЛЯ МОБИЛКИ */}
                     <div className="md:hidden mt-[24px] w-full rounded-[30px] bg-[#BCEC30] p-[30px] flex flex-col gap-[24px]">
                         {mobileDirections.map((direction, index) => (
                             <span key={index} className="w-full text-black text-[18px] font-normal leading-[110%] flex items-center gap-[8px]">

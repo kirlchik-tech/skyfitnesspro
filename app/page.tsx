@@ -1,6 +1,5 @@
 import { CourseCard } from "@/components/UI/CourseCard";
 import { Header } from "@/components/UI/Header";
-import { Button } from "@/components/UI/Button";
 import { ScrollToTop } from "@/components/UI/ScrollToTop";
 
 

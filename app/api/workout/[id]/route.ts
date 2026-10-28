@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 
-const workoutData: Record<string, any> = {
+interface ExerciseItem {
+    name: string;
+    quantity: number;
+}
+
+interface WorkoutItem {
+    _id: string;
+    course: string;
+    name: string;
+    video: string;
+    exercises: ExerciseItem[];
+}
+
+const workoutData: Record<string, WorkoutItem> = {
     // === ФИТНЕС ===
     "17oz5f": {
         _id: "17oz5f",

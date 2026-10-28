@@ -3,7 +3,22 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { Course } from '@/models/Course';
 
-const workoutsData: Record<string, any[]> = {
+interface ExerciseSummary {
+    quantity: number;
+}
+
+interface WorkoutSummary {
+    _id: string;
+    exercises: ExerciseSummary[];
+}
+
+interface LeanUser {
+    email: string;
+    purchasedCourses?: string[];
+    workoutProgress?: Map<string, number[]> | Record<string, number[]>;
+}
+
+const workoutsData: Record<string, WorkoutSummary[]> = {
     yoga: [
         { _id: "3yvozj", exercises: [{ quantity: 10 }] },
         { _id: "hfgxlo", exercises: [{ quantity: 10 }, { quantity: 10 }, { quantity: 5 }] },
@@ -41,15 +56,16 @@ export async function POST(request: Request) {
         await connectToDatabase();
         const { email } = await request.json();
 
-        const user: any = await User.findOne({ email }).lean();
+        const user = await User.findOne({ email }).lean<LeanUser>();
         if (!user) {
             return NextResponse.json({ message: 'Пользователь не найден' }, { status: 404 });
         }
 
-        const courses = await Course.find({ name_id: { $in: user.purchasedCourses } });
+        const courses = await Course.find({ name_id: { $in: user.purchasedCourses || [] } });
 
         const rawProgress = user.workoutProgress || {};
-        const userProgress = rawProgress instanceof Map ? Object.fromEntries(rawProgress) : rawProgress;
+        const userProgress: Record<string, number[]> =
+            rawProgress instanceof Map ? Object.fromEntries(rawProgress) : rawProgress;
 
         const coursesWithProgress = courses.map(course => {
             const courseObj = course.toObject();
@@ -60,10 +76,9 @@ export async function POST(request: Request) {
 
             courseWorkouts.forEach(workout => {
                 if (workout.exercises) {
-                    const workoutMax = workout.exercises.reduce((sum: number, ex: any) => sum + ex.quantity, 0);
+                    const workoutMax = workout.exercises.reduce((sum: number, ex: ExerciseSummary) => sum + ex.quantity, 0);
                     totalCourseMax += workoutMax;
 
-                    // Достаем массив по ключу (теперь это обычный объект, а не Map)
                     const userSavedArray = userProgress[workout._id] || [];
                     const workoutCurrent = userSavedArray.reduce((sum: number, val: number) => sum + val, 0);
 
@@ -83,7 +98,7 @@ export async function POST(request: Request) {
         });
 
         return NextResponse.json(coursesWithProgress, { status: 200 });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
     }
 }

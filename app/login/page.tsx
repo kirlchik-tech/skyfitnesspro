@@ -45,9 +45,11 @@ export default function LoginPage() {
       // Передаем имя или email в контекст авторизации
       login({ name: data.name || "Пользователь", email: email });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Если что-то пошло не так (неверный пароль или упал интернет)
-      setErrorText(error.message);
+      if (error instanceof Error) {
+        setErrorText(error.message);
+      }
     }
   };
 

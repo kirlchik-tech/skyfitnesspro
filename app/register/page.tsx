@@ -63,9 +63,11 @@ export default function RegisterPage() {
       // Передаем имя (или email) в наш контекст регистрации
       login({ name: data.name || "Новый пользователь", email: email });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Если что-то пошло не так (неверный пароль или упал интернет)
-      setErrorText(error.message);
+      if (error instanceof Error) {
+        setErrorText(error.message);
+      }
     }
   };
 

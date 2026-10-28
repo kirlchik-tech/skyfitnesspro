@@ -1,31 +1,34 @@
-// Файл: lib/mongodb.ts
-import mongoose from 'mongoose';
+import mongoose, { Mongoose } from 'mongoose';
 
-//локальная база данных на диске 
-const MONGODB_URI = 'mongodb://127.0.0.1:27017/skyfitnesspro';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/skyfitnesspro';
 
-// Глобальная переменная для сохранения подключения при перезагрузках Next.js
-let cached = (global as any).mongoose;
+interface MongooseCache {
+  conn: Mongoose | null;
+  promise: Promise<Mongoose> | null;
+}
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+declare global {
+  var mongooseCache: MongooseCache | undefined;
+}
+
+const cached: MongooseCache = globalThis.mongooseCache || { conn: null, promise: null };
+
+if (!globalThis.mongooseCache) {
+  globalThis.mongooseCache = cached;
 }
 
 export async function connectToDatabase() {
-  // Если подключение уже есть — возвращаем его
   if (cached.conn) {
     return cached.conn;
   }
 
-  // Если в процессе подключения — ждем
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('✅ Подключено к MongoDB на диске F!');
-      return mongoose;
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
+      return mongooseInstance;
     });
   }
 

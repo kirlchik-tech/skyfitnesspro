@@ -76,8 +76,10 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
       const data = await response.json();
       login({ name: data.name || 'Пользователь', email });
       setAuthModalMode(null);
-    } catch (error: any) {
-      setErrorText(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorText(error.message);
+      }
     }
   };
 
@@ -114,8 +116,10 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
       const data = await response.json();
       login({ name: data.name || 'Новый пользователь', email });
       setAuthModalMode(null);
-    } catch (error: any) {
-      setErrorText(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorText(error.message);
+      }
     }
   };
 

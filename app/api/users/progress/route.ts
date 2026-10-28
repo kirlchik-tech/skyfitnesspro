@@ -2,18 +2,33 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { User } from '@/models/User';
 
-export const dynamic = 'force-dynamic'; // Запрещаем Next.js кэшировать этот роут
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
         await connectToDatabase();
-        const { email, workoutId, progress } = await request.json();
+        const { email, workoutId, progress, resetWorkoutIds } = await request.json();
+
+        // Если передан массив ID тренировок для сброса прогресса курса ("Начать заново")
+        if (email && Array.isArray(resetWorkoutIds)) {
+            const unsetFields: Record<string, string> = {};
+            resetWorkoutIds.forEach((id: string) => {
+                unsetFields[`workoutProgress.${id}`] = '';
+            });
+
+            await User.findOneAndUpdate(
+                { email },
+                { $unset: unsetFields },
+                { new: true, strict: false }
+            ).lean();
+
+            return NextResponse.json({ message: 'Прогресс курса сброшен' }, { status: 200 });
+        }
 
         if (!email || !workoutId || !progress) {
             return NextResponse.json({ message: 'Неверные данные' }, { status: 400 });
         }
 
-        // Напрямую записываем массив в поле workoutProgress.<id_тренировки> в MongoDB
         const updatedUser = await User.findOneAndUpdate(
             { email },
             { $set: { [`workoutProgress.${workoutId}`]: progress } },
@@ -25,8 +40,7 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({ message: 'Прогресс успешно сохранен' }, { status: 200 });
-    } catch (error) {
-        console.error('Ошибка POST /api/users/progress:', error);
+    } catch {
         return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
     }
 }
@@ -39,17 +53,16 @@ export async function GET(request: Request) {
 
         if (!email) return NextResponse.json({ message: 'Email не передан' }, { status: 400 });
 
-        // .lean() возвращает чистый JS-объект напрямую из базы без оберток Mongoose
-        const user: any = await User.findOne({ email }).lean();
+        const user = await User.findOne({ email }).lean<{
+            workoutProgress?: Map<string, number[]> | Record<string, number[]>;
+        }>();
         if (!user) return NextResponse.json({ message: 'Пользователь не найден' }, { status: 404 });
 
-        // На случай если в базе со старых попыток остался Map, конвертируем его
         const rawProgress = user.workoutProgress || {};
         const plainProgress = rawProgress instanceof Map ? Object.fromEntries(rawProgress) : rawProgress;
 
         return NextResponse.json(plainProgress, { status: 200 });
-    } catch (error) {
-        console.error('Ошибка GET /api/users/progress:', error);
+    } catch {
         return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
     }
 }
