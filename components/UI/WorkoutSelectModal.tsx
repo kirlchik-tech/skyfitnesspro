@@ -2,18 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-
-interface WorkoutExercise {
-    name: string;
-    quantity: number;
-}
-
-interface Workout {
-    _id: string;
-    name: string;
-    course: string;
-    exercises?: WorkoutExercise[];
-}
+import {
+    getCourseWorkouts,
+    getUserMe,
+    isWorkoutCompletedCheck,
+    Workout,
+    WorkoutProgressItem,
+} from '@/lib/api';
 
 interface WorkoutSelectModalProps {
     isOpen: boolean;
@@ -21,38 +16,41 @@ interface WorkoutSelectModalProps {
     courseId: string | null;
 }
 
-export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, onClose, courseId }) => {
+export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({
+    isOpen,
+    onClose,
+    courseId,
+}) => {
     const router = useRouter();
-    const { user } = useAuth();
+    const { token } = useAuth();
+
+    // Список тренировок выбранного курса
     const [workouts, setWorkouts] = useState<Workout[]>([]);
-    const [userProgress, setUserProgress] = useState<Record<string, number[]>>({});
+    // Прогресс по тренировкам данного курса из профиля пользователя
+    const [workoutsProgress, setWorkoutsProgress] = useState<WorkoutProgressItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
 
+    // При открытии модального окна запрашиваем тренировки курса и прогресс пользователя
     useEffect(() => {
-        if (isOpen && courseId) {
+        if (isOpen && courseId && token) {
             const fetchWorkoutsAndProgress = async () => {
                 setIsLoading(true);
                 try {
-                    const res = await fetch(`/api/workouts?course=${courseId}`);
-                    if (!res.ok) throw new Error('Ошибка загрузки');
+                    const [fetchedWorkouts, userProfile] = await Promise.all([
+                        getCourseWorkouts(token, courseId),
+                        getUserMe(token),
+                    ]);
 
-                    const data = await res.json();
-                    const fetchedWorkouts: Workout[] = data.data || data;
                     setWorkouts(fetchedWorkouts);
                     setSelectedWorkoutId(null);
 
-                    if (user?.email) {
-                        const resProg = await fetch(`/api/users/progress?email=${encodeURIComponent(user.email)}`, {
-                            cache: 'no-store'
-                        });
-                        if (resProg.ok) {
-                            const progData: Record<string, number[]> = await resProg.json();
-                            setUserProgress(progData);
-                        }
-                    }
+                    const courseProg = userProfile.courseProgress.find(
+                        (cp) => cp.courseId === courseId
+                    );
+                    setWorkoutsProgress(courseProg?.workoutsProgress || []);
                 } catch {
-                    // Ошибка обрабатывается пустым состоянием списка
+                    setWorkouts([]);
                 } finally {
                     setIsLoading(false);
                 }
@@ -60,20 +58,20 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, 
 
             fetchWorkoutsAndProgress();
         }
-    }, [isOpen, courseId, user]);
+    }, [isOpen, courseId, token]);
 
     if (!isOpen) return null;
 
-    // Проверяем, выполнена ли тренировка полностью
-    const isWorkoutCompleted = (workout: Workout): boolean => {
-        const saved = userProgress[workout._id];
-        if (!saved || !workout.exercises || workout.exercises.length === 0) return false;
-        return workout.exercises.every((ex, idx) => (Number(saved[idx]) || 0) >= ex.quantity);
+    // Проверяем, завершена ли конкретная тренировка на 100%
+    const isCompleted = (workout: Workout): boolean => {
+        const wp = workoutsProgress.find((item) => item.workoutId === workout._id);
+        return isWorkoutCompletedCheck(workout, wp);
     };
 
+    // Переход к выбранной тренировке с передачей ID курса в query-параметре
     const handleStart = () => {
-        if (selectedWorkoutId) {
-            router.push(`/workout/${selectedWorkoutId}`);
+        if (selectedWorkoutId && courseId) {
+            router.push(`/workout/${selectedWorkoutId}?courseId=${courseId}`);
         }
     };
 
@@ -98,7 +96,7 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, 
                     ) : (
                         workouts.map((workout, index) => {
                             const isSelected = selectedWorkoutId === workout._id;
-                            const isCompleted = isWorkoutCompleted(workout);
+                            const completed = isCompleted(workout);
 
                             return (
                                 <div
@@ -107,14 +105,34 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, 
                                     className={`w-full border-b border-[#C4C4C4] pb-[10px] pt-[6px] flex items-center gap-[15px] md:gap-[17px] cursor-pointer px-2 rounded-t-[8px] transition-colors ${isSelected ? 'bg-[#F4F5F6]' : 'hover:bg-gray-50'
                                         }`}
                                 >
-                                    {isSelected || isCompleted ? (
-                                        <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                                    {isSelected || completed ? (
+                                        <svg
+                                            width="20"
+                                            height="20"
+                                            viewBox="0 0 28 28"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="shrink-0"
+                                        >
                                             <circle cx="14" cy="14" r="13" stroke="#BCEC30" strokeWidth="2" />
                                             <circle cx="14" cy="14" r="14" fill="#BCEC30" />
-                                            <path d="M8.40039 15.3996L12.6004 18.1996L19.6004 11.1992" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path
+                                                d="M8.40039 15.3996L12.6004 18.1996L19.6004 11.1992"
+                                                stroke="white"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
                                         </svg>
                                     ) : (
-                                        <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                                        <svg
+                                            width="20"
+                                            height="20"
+                                            viewBox="0 0 28 28"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="shrink-0"
+                                        >
                                             <circle cx="14" cy="14" r="13" stroke="black" strokeWidth="2" />
                                         </svg>
                                     )}
@@ -123,9 +141,8 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({ isOpen, 
                                         <span className="font-['Roboto'] text-[18px] md:text-[24px] font-normal text-black leading-[110%] mb-[6px]">
                                             {workout.name}
                                         </span>
-
                                         <span className="font-['Roboto'] text-[14px] md:text-[16px] font-normal text-black leading-[110%]">
-                                            {workout.course} / {index + 1} день
+                                            Урок {index + 1}
                                         </span>
                                     </div>
                                 </div>
