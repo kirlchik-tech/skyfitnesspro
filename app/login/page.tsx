@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from '@/context/AuthContext';
 import Home from "../page";
+import { apiLogin } from '@/lib/api';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -19,34 +20,16 @@ export default function LoginPage() {
 
   // 3. Создаем функцию отправки данных
   const handleLogin = async () => {
-    // Сбрасываем старую ошибку при новой попытке
-    setErrorText("");
-
+    setErrorText('');
+    if (!email || !password) {
+      setErrorText('Заполните все поля!');
+      return;
+    }
     try {
-      const response = await fetch("/api/fitness/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password
-        }),
-      });
-
-      // Если сервер ответил ошибкой (например, статус 400 или 401)
-      if (!response.ok) {
-        throw new Error("Неверный email или пароль");
-      }
-
-      // Если всё отлично, расшифровываем ответ сервера
-      const data = await response.json();
-
-      // Передаем имя или email в контекст авторизации
-      login({ name: data.name || "Пользователь", email: email });
-
+      const token = await apiLogin(email.trim(), password);
+      await login({ name: email.split('@')[0], email: email.trim() }, token);
+      router.push('/profile');
     } catch (error: unknown) {
-      // Если что-то пошло не так (неверный пароль или упал интернет)
       if (error instanceof Error) {
         setErrorText(error.message);
       }

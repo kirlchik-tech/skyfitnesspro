@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ProfileIcon } from '../icons/ProfileIcon';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-
+import { apiLogin, apiRegister } from '@/lib/api';
 
 interface HeaderProps {
   hideSubtitle?: boolean;
@@ -17,18 +17,15 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
   const { isLoggedIn, user, login, logout } = useAuth();
   const router = useRouter();
 
-  // Стейт для открытия/закрытия выпадающего меню профиля
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Стейт для модального окна Входа / Регистрации поверх текущей страницы
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [errorText, setErrorText] = useState('');
 
-  // Закрываем меню при клике вне его области + слушаем событие открытия модалки со страницы курса
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -59,22 +56,15 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
     router.push('/');
   };
 
-  // Функция входа внутри модалки
   const handleLoginSubmit = async () => {
     setErrorText('');
+    if (!email || !password) {
+      setErrorText('Заполните все поля!');
+      return;
+    }
     try {
-      const response = await fetch('/api/fitness/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Неверный email или пароль');
-      }
-
-      const data = await response.json();
-      login({ name: data.name || 'Пользователь', email });
+      const token = await apiLogin(email.trim(), password);
+      await login({ name: email.split('@')[0], email: email.trim() }, token);
       setAuthModalMode(null);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -83,7 +73,6 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
     }
   };
 
-  // Функция регистрации внутри модалки
   const handleRegisterSubmit = async () => {
     setErrorText('');
     if (!email || !password) {
@@ -103,18 +92,9 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
     }
 
     try {
-      const response = await fetch('/api/fitness/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Такое Email уже есть или данные некорректны!');
-      }
-
-      const data = await response.json();
-      login({ name: data.name || 'Новый пользователь', email });
+      await apiRegister(email.trim(), password);
+      const token = await apiLogin(email.trim(), password);
+      await login({ name: email.split('@')[0], email: email.trim() }, token);
       setAuthModalMode(null);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -126,8 +106,6 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
   return (
     <>
       <header className="w-full max-w-[1160px] mx-auto flex items-center md:items-start justify-between pt-[46px] pb-[40px] md:pt-[30px] md:pb-[40px] px-[16px] xl:px-0">
-
-        {/* ЛЕВЫЙ БЛОК: Логотип и текст под ним */}
         <div className="flex flex-col gap-[15px]">
           <Link href="/" className="flex items-center w-full">
             <img src="/Logo.svg" alt="SkyFitnessPro" className="md:h-[35px] w-auto" />
@@ -140,7 +118,6 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
           )}
         </div>
 
-        {/* ПРАВЫЙ БЛОК */}
         {isLoggedIn ? (
           <div className="relative" ref={menuRef}>
             <button
@@ -152,7 +129,6 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
               </div>
               <span className="hidden md:inline text-[24px] font-normal text-black">{user?.name}</span>
 
-              {/* Стрелочка для МОБИЛКИ (10x7) */}
               <svg
                 width="10"
                 height="7"
@@ -164,7 +140,6 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
                 <path d="M8.70715 0.707031L4.70715 4.70703L0.707153 0.707031" strokeWidth="2" stroke="black" />
               </svg>
 
-              {/* Стрелочка для ПК (14x9) */}
               <svg
                 width="14"
                 height="9"
@@ -211,7 +186,6 @@ export const Header: React.FC<HeaderProps> = ({ hideSubtitle }) => {
         )}
       </header>
 
-      {/* МОДАЛКА ВХОДА И РЕГИСТРАЦИИ ПОВЕРХ ТЕКУЩЕЙ СТРАНИЦЫ */}
       {authModalMode && !isLoggedIn && (
         <div
           className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center px-[16px]"
