@@ -21,12 +21,12 @@ export interface ApiCourse {
     directions: string[];
     fitting: string[];
     workouts: string[];
-    // Наши визуальные поля для карточек и баннеров
     name_id: string;
     title: string;
     color: string;
     imageSrc: string;
     cardImageSrc: string;
+    aliases: string[];
 }
 
 export interface WorkoutProgressItem {
@@ -47,7 +47,7 @@ export interface ApiUserProfile {
     courseProgress: CourseProgressItem[];
 }
 
-// Привязываем цвета и картинки из макета к курсам 
+// Сопоставляем курсы из внешнего API с фирменными изображениями, цветами и локальными слагами верстки
 function mapCourseVisuals(raw: {
     _id: string;
     nameRU: string;
@@ -62,23 +62,28 @@ function mapCourseVisuals(raw: {
     let color = '#FFC700';
     let imageSrc = '/Yellows.png';
     let cardImageSrc = '/Yellow.png';
+    let aliases: string[] = [raw._id, 'yoga', 'йога'];
 
     if (key.includes('stretch') || key.includes('стретч')) {
         color = '#2491D2';
         imageSrc = '/Blues.png';
         cardImageSrc = '/Blue.png';
+        aliases = [raw._id, 'stretching', 'stretch', 'стретчинг'];
     } else if (key.includes('fitness') || key.includes('фитнес')) {
         color = '#F7A012';
         imageSrc = '/Oranges.png';
         cardImageSrc = '/Orange.png';
+        aliases = [raw._id, 'fitness', 'фитнес'];
     } else if (key.includes('step') || key.includes('степ')) {
         color = '#FF7E65';
         imageSrc = '/Pinks.png';
         cardImageSrc = '/Pink.png';
+        aliases = [raw._id, 'step', 'step-aerobics', 'stepaerobics', 'step_aerobics', 'stepairobic', 'степ-аэробика'];
     } else if (key.includes('body') || key.includes('боди')) {
         color = '#7D458C';
         imageSrc = '/Purples.png';
         cardImageSrc = '/Purple.png';
+        aliases = [raw._id, 'bodyflex', 'body-flex', 'body_flex', 'бодифлекс'];
     }
 
     return {
@@ -94,21 +99,48 @@ function mapCourseVisuals(raw: {
         color,
         imageSrc,
         cardImageSrc,
+        aliases,
     };
 }
+
+let cachedCourses: ApiCourse[] | null = null;
 
 // 1. Получить все курсы
 export async function getCourses(): Promise<ApiCourse[]> {
     const res = await fetch(`${BASE_URL}/courses`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Не удалось загрузить курсы');
     const data = await res.json();
-    return Array.isArray(data) ? data.map(mapCourseVisuals) : [];
+    const mapped = Array.isArray(data) ? data.map(mapCourseVisuals) : [];
+    cachedCourses = mapped;
+    return mapped;
 }
 
-// 2. Получить один курс по ID
-export async function getCourseById(id: string): Promise<ApiCourse> {
-    const res = await fetch(`${BASE_URL}/courses/${id}`, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Курс не найден');
+// Находит курс как по серверному _id, так и по локальному name_id из верстки (yoga, stretching и т.д.)
+export async function resolveCourse(idOrSlug: string): Promise<ApiCourse | null> {
+    const list = cachedCourses || (await getCourses());
+    const normalized = idOrSlug.toLowerCase();
+    return (
+        list.find(
+            (c) => c._id === idOrSlug || c.aliases.some((alias) => alias.toLowerCase() === normalized)
+        ) || null
+    );
+}
+
+// Возвращает серверный _id курса для отправки запросов во внешний REST API
+export async function resolveRealCourseId(idOrSlug: string): Promise<string> {
+    const found = await resolveCourse(idOrSlug);
+    return found ? found._id : idOrSlug;
+}
+
+// 2. Получить один курс по ID или локальному слагу
+export async function getCourseById(idOrSlug: string): Promise<ApiCourse> {
+    const realId = await resolveRealCourseId(idOrSlug);
+    const res = await fetch(`${BASE_URL}/courses/${realId}`, { cache: 'no-store' });
+    if (!res.ok) {
+        const fallback = await resolveCourse(idOrSlug);
+        if (fallback) return fallback;
+        throw new Error('Курс не найден');
+    }
     const data = await res.json();
     return mapCourseVisuals(data);
 }
@@ -125,7 +157,7 @@ export async function apiRegister(email: string, password: string): Promise<void
     }
 }
 
-// 4. Вход (возвращает JWT токен)
+// 4. Вход (возвращает JWT-токен)
 export async function apiLogin(email: string, password: string): Promise<string> {
     const res = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
@@ -155,8 +187,9 @@ export async function getUserMe(token: string): Promise<ApiUserProfile> {
     };
 }
 
-// 6. Добавить курс пользователю
-export async function apiAddCourse(token: string, courseId: string): Promise<void> {
+// 6. Добавить курс пользователю (поддерживает и _id, и локальный name_id из верстки)
+export async function apiAddCourse(token: string, idOrSlug: string): Promise<void> {
+    const courseId = await resolveRealCourseId(idOrSlug);
     const res = await fetch(`${BASE_URL}/users/me/courses`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -168,8 +201,9 @@ export async function apiAddCourse(token: string, courseId: string): Promise<voi
     }
 }
 
-// 7. Удалить курс у пользователя
-export async function apiRemoveCourse(token: string, courseId: string): Promise<void> {
+// 7. Удалить курс у пользователя (поддерживает и _id, и локальный name_id из верстки)
+export async function apiRemoveCourse(token: string, idOrSlug: string): Promise<void> {
+    const courseId = await resolveRealCourseId(idOrSlug);
     const res = await fetch(`${BASE_URL}/users/me/courses/${courseId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
@@ -180,7 +214,8 @@ export async function apiRemoveCourse(token: string, courseId: string): Promise<
 }
 
 // 8. Получить список тренировок курса
-export async function getCourseWorkouts(token: string, courseId: string): Promise<Workout[]> {
+export async function getCourseWorkouts(token: string, idOrSlug: string): Promise<Workout[]> {
+    const courseId = await resolveRealCourseId(idOrSlug);
     const res = await fetch(`${BASE_URL}/courses/${courseId}/workouts`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',
@@ -202,9 +237,10 @@ export async function getWorkoutById(token: string, workoutId: string): Promise<
 // 10. Получить прогресс конкретной тренировки
 export async function getWorkoutProgress(
     token: string,
-    courseId: string,
+    idOrSlug: string,
     workoutId: string
 ): Promise<number[]> {
+    const courseId = await resolveRealCourseId(idOrSlug);
     const res = await fetch(
         `${BASE_URL}/users/me/progress?courseId=${courseId}&workoutId=${workoutId}`,
         {
@@ -220,10 +256,11 @@ export async function getWorkoutProgress(
 // 11. Сохранить прогресс тренировки
 export async function saveWorkoutProgress(
     token: string,
-    courseId: string,
+    idOrSlug: string,
     workoutId: string,
     progressData: number[]
 ): Promise<void> {
+    const courseId = await resolveRealCourseId(idOrSlug);
     const res = await fetch(`${BASE_URL}/courses/${courseId}/workouts/${workoutId}`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
@@ -233,7 +270,8 @@ export async function saveWorkoutProgress(
 }
 
 // 12. Сбросить прогресс курса ("Начать заново")
-export async function resetCourseProgress(token: string, courseId: string): Promise<void> {
+export async function resetCourseProgress(token: string, idOrSlug: string): Promise<void> {
+    const courseId = await resolveRealCourseId(idOrSlug);
     const res = await fetch(`${BASE_URL}/courses/${courseId}/reset`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
@@ -241,7 +279,7 @@ export async function resetCourseProgress(token: string, courseId: string): Prom
     if (!res.ok) throw new Error('Ошибка сброса прогресса');
 }
 
-// ПРОВЕРКА: Выполнена ли тренировка на 100%
+// ПРОВЕРКА: Выполнена ли тренировка полностью (на 100%)
 export function isWorkoutCompletedCheck(
     workout: Workout,
     wp?: WorkoutProgressItem
@@ -258,7 +296,7 @@ export function isWorkoutCompletedCheck(
     );
 }
 
-// РАСЧЕТ ПРОГРЕССА КУРСА 
+// РАСЧЕТ ПРОГРЕССА КУРСА (учитываются только полностью пройденные тренировки: 1 из 5 = 20%)
 export function calculateCourseProgressPercent(
     courseWorkouts: Workout[],
     courseProgress?: CourseProgressItem

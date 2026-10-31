@@ -11,12 +11,15 @@ interface CourseCardProps {
 }
 
 export const CourseCard: React.FC<CourseCardProps> = ({ title, imageSrc, name_id }: CourseCardProps) => {
+  // Достаем статус авторизации, список добавленных курсов и методы управления из контекста
   const { isLoggedIn, selectedCourses, addCourse, removeCourse } = useAuth();
   const [isPending, setIsPending] = useState(false);
 
+  // Проверяем, добавлен ли текущий курс в профиль пользователя
   const isAdded = isLoggedIn && selectedCourses.includes(name_id);
 
-  const handleToggleCourse = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  // Обработчик клика по иконке: добавляет курс (если его нет) или удаляет (если он уже добавлен)
+  const handleToggleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -35,7 +38,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ title, imageSrc, name_id
         await addCourse(name_id);
       }
     } catch {
-      alert('Ошибка при обновлении списка курсов');
+      alert('Ошибка сети');
     } finally {
       setIsPending(false);
     }
@@ -44,18 +47,29 @@ export const CourseCard: React.FC<CourseCardProps> = ({ title, imageSrc, name_id
   return (
     <Link href={`/course/${name_id}`} className="block w-[343px] md:w-full">
       <div className="w-[343px] h-[492px] pb-[15px] md:w-full md:h-auto md:pb-0 bg-white rounded-[30px] shadow-[0px_4px_67px_-12px_#00000021] relative transition-transform hover:scale-[1.02] cursor-pointer">
-        {/* Иконка Плюс (добавить) или Минус (удалить) в правом верхнем углу */}
+        {/* Иконка Плюс (добавить) или прозрачный Минус (удалить) в правом верхнем углу картинки */}
         <button
           type="button"
-          onClick={handleToggleCourse}
+          onClick={handleToggleClick}
           disabled={isPending}
           title={isAdded ? 'Удалить курс' : 'Добавить курс'}
           className="absolute top-[20px] right-[20px] z-20 hover:scale-110 transition-transform cursor-pointer"
         >
           {isAdded ? (
-            <svg width="27" height="27" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="16" cy="16" r="16" fill="white" />
-              <path d="M9 16H23" stroke="#202020" strokeWidth="2.5" strokeLinecap="round" />
+            <svg
+              width="27"
+              height="27"
+              viewBox="0 0 32 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-[27px] h-[27px]"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M16 32C24.8366 32 32 24.8366 32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32ZM9 14.5H23V17.5H9V14.5Z"
+                fill="white"
+              />
             </svg>
           ) : (
             <img src="/Plus.svg" alt="Добавить курс" className="w-[27px] h-[27px]" />
@@ -69,7 +83,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ title, imageSrc, name_id
 
         {/* Текстовый блок */}
         <div className="flex flex-col gap-[20px] px-[21px] md:px-[30px] pt-[20px] pb-[15px] md:pb-[30px]">
-          <h3 className="font-stratos text-[32px] font-normal text-black leading-[110%] tracking-[0px] lining-nums proportional-nums">
+          <h3 className="font-roboto text-[32px] font-medium text-black leading-[110%] tracking-[0px] lining-nums proportional-nums">
             {title}
           </h3>
 

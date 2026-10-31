@@ -24,14 +24,11 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({
     const router = useRouter();
     const { token } = useAuth();
 
-    // Список тренировок выбранного курса
     const [workouts, setWorkouts] = useState<Workout[]>([]);
-    // Прогресс по тренировкам данного курса из профиля пользователя
     const [workoutsProgress, setWorkoutsProgress] = useState<WorkoutProgressItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
 
-    // При открытии модального окна запрашиваем тренировки курса и прогресс пользователя
     useEffect(() => {
         if (isOpen && courseId && token) {
             const fetchWorkoutsAndProgress = async () => {
@@ -62,13 +59,11 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({
 
     if (!isOpen) return null;
 
-    // Проверяем, завершена ли конкретная тренировка на 100%
     const isCompleted = (workout: Workout): boolean => {
         const wp = workoutsProgress.find((item) => item.workoutId === workout._id);
         return isWorkoutCompletedCheck(workout, wp);
     };
 
-    // Переход к выбранной тренировке с передачей ID курса в query-параметре
     const handleStart = () => {
         if (selectedWorkoutId && courseId) {
             router.push(`/workout/${selectedWorkoutId}?courseId=${courseId}`);
@@ -84,11 +79,11 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({
                 className="bg-white rounded-[30px] w-[343px] md:w-[460px] p-[30px] md:p-[40px] flex flex-col items-center relative"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2 className="font-stratos text-black text-[32px] font-normal mb-[30px] md:mb-[40px] w-full text-left md:text-center leading-[110%] tracking-[0px] lining-nums proportional-nums">
+                <h2 className="font-roboto text-black text-[32px] font-normal mb-[30px] md:mb-[48px] w-full text-left leading-[110%] tracking-[0px] lining-nums proportional-nums">
                     Выберите тренировку
                 </h2>
 
-                <div className="w-full max-h-[310px] md:max-h-[350px] overflow-y-auto pr-3 md:pr-4 mb-[34px] md:mb-[48px] custom-scrollbar flex flex-col gap-[10px]">
+                <div className="w-full max-h-[310px] md:max-h-[350px] overflow-y-auto pr-3 md:pr-4 mb-[34px] md:mb-[34px] custom-scrollbar flex flex-col gap-[10px]">
                     {isLoading ? (
                         <div className="text-center text-black/50">Загрузка тренировок...</div>
                     ) : workouts.length === 0 ? (
@@ -97,6 +92,14 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({
                         workouts.map((workout, index) => {
                             const isSelected = selectedWorkoutId === workout._id;
                             const completed = isCompleted(workout);
+
+                            // Разбиваем длинную строку из БД ("Утренняя практика / Йога на каждый день / 1 день / Автор")
+                            const parts = workout.name.split(' / ');
+                            const mainTitle = parts[0] || workout.name;
+                            const subTitle =
+                                parts.length > 1
+                                    ? parts.slice(1, 3).join(' / ')
+                                    : `Урок ${index + 1}`;
 
                             return (
                                 <div
@@ -114,7 +117,6 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({
                                             xmlns="http://www.w3.org/2000/svg"
                                             className="shrink-0"
                                         >
-                                            <circle cx="14" cy="14" r="13" stroke="#BCEC30" strokeWidth="2" />
                                             <circle cx="14" cy="14" r="14" fill="#BCEC30" />
                                             <path
                                                 d="M8.40039 15.3996L12.6004 18.1996L19.6004 11.1992"
@@ -137,12 +139,12 @@ export const WorkoutSelectModal: React.FC<WorkoutSelectModalProps> = ({
                                         </svg>
                                     )}
 
-                                    <div className="flex flex-col">
-                                        <span className="font-['Roboto'] text-[18px] md:text-[24px] font-normal text-black leading-[110%] mb-[6px]">
-                                            {workout.name}
+                                    <div className="flex flex-col gap-[10px]">
+                                        <span className="font-roboto text-[18px] md:text-[24px] font-normal text-black leading-[110%] tracking-[0px] lining-nums proportional-nums">
+                                            {mainTitle}
                                         </span>
-                                        <span className="font-['Roboto'] text-[14px] md:text-[16px] font-normal text-black leading-[110%]">
-                                            Урок {index + 1}
+                                        <span className="font-roboto text-[14px] md:text-[16px] font-normal text-black leading-[110%] tracking-[0px] lining-nums proportional-nums">
+                                            {subTitle}
                                         </span>
                                     </div>
                                 </div>

@@ -15,18 +15,16 @@ import {
 
 export default function SingleWorkoutPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-
   const { token } = useAuth();
 
-  // Состояние текущей тренировки, названия курса и массива прогресса по упражнениям
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [activeCourseId, setActiveCourseId] = useState<string>('');
   const [courseTitle, setCourseTitle] = useState<string>('Тренировка');
+  const [workoutNumber, setWorkoutNumber] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
   const [userProgress, setUserProgress] = useState<number[]>([]);
 
-  // 1. Загружаем данные тренировки и текущий прогресс пользователя из REST API
   useEffect(() => {
     if (!token) return;
 
@@ -41,18 +39,22 @@ export default function SingleWorkoutPage({ params }: { params: Promise<{ id: st
 
         setWorkout(workoutData);
 
-        // Определяем курс, к которому относится данная тренировка
         const parentCourse =
-          allCourses.find((c) => c._id === queryCourseId) ||
+          allCourses.find((c) => c._id === queryCourseId || c.aliases.includes(queryCourseId || '')) ||
           allCourses.find((c) => c.workouts.includes(id));
 
         const resolvedCourseId = parentCourse?._id || queryCourseId || '';
         setActiveCourseId(resolvedCourseId);
+
         if (parentCourse) {
           setCourseTitle(parentCourse.title);
+          // Вычисляем порядковый номер тренировки в курсе (1, 2, 3...)
+          const idx = parentCourse.workouts.findIndex((wId) => wId === id);
+          if (idx !== -1) {
+            setWorkoutNumber(idx + 1);
+          }
         }
 
-        // Загружаем сохраненный прогресс пользователя по этой тренировке
         if (resolvedCourseId) {
           const savedProgress = await getWorkoutProgress(token, resolvedCourseId, id);
           if (savedProgress.length > 0) {
@@ -71,9 +73,8 @@ export default function SingleWorkoutPage({ params }: { params: Promise<{ id: st
     fetchWorkoutAndProgress();
   }, [id, token]);
 
-  // 2. Отправляем обновленный прогресс упражнений в API
   const handleProgressSubmit = async (values: number[]) => {
-    setUserProgress(values); // Оптимистичное обновление шкалы прогресса в интерфейсе
+    setUserProgress(values);
 
     if (!token || !activeCourseId) return;
 
@@ -86,7 +87,7 @@ export default function SingleWorkoutPage({ params }: { params: Promise<{ id: st
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-stratos text-2xl">
+      <div className="min-h-screen flex items-center justify-center font-roboto text-2xl">
         Загрузка...
       </div>
     );
@@ -94,7 +95,7 @@ export default function SingleWorkoutPage({ params }: { params: Promise<{ id: st
 
   if (!workout) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-stratos text-2xl">
+      <div className="min-h-screen flex items-center justify-center font-roboto text-2xl">
         Тренировка не найдена
       </div>
     );
@@ -104,8 +105,8 @@ export default function SingleWorkoutPage({ params }: { params: Promise<{ id: st
     <>
       <Header hideSubtitle={true} />
       <main className="max-w-[1160px] w-full mx-auto flex flex-col items-center md:items-stretch pb-[60px] md:pb-[100px] px-[16px] xl:px-0 mt-[16px] md:mt-[40px]">
-        {/* Заголовок курса */}
-        <h1 className="w-[343px] md:w-full font-stratos text-[24px] md:text-[60px] font-normal md:font-medium mb-[24px] md:mb-[40px] leading-[110%] tracking-[0px] lining-nums proportional-nums">
+        {/* Заголовок курса (Roboto Medium 60px, line-height 100%) */}
+        <h1 className="w-[343px] md:w-full font-roboto text-[24px] md:text-[60px] font-medium text-black mb-[24px] md:mb-[40px] leading-[110%] md:leading-[100%] tracking-[0px] lining-nums proportional-nums">
           {courseTitle}
         </h1>
 
@@ -121,25 +122,23 @@ export default function SingleWorkoutPage({ params }: { params: Promise<{ id: st
           ></iframe>
         </div>
 
-        {/* Блок упражнений и прогресс-баров (если в уроке есть упражнения) */}
+        {/* Блок упражнений с номером тренировки */}
         {workout.exercises && workout.exercises.length > 0 && (
-          <div className="w-[343px] md:w-full bg-white rounded-[30px] shadow-[0px_4px_67px_-12px_#00000021] p-[30px] md:p-[40px] flex flex-col gap-[24px] md:gap-[30px]">
-            <h2 className="font-stratos text-[32px] font-normal leading-[110%] tracking-[0px] lining-nums proportional-nums">
-              Упражнения тренировки
+          <div className="w-[343px] md:w-full bg-white rounded-[30px] shadow-[0px_4px_67px_-12px_#00000021] p-[30px] md:p-[40px] flex flex-col gap-[20px] md:gap-[20px]">
+            <h2 className="font-roboto text-[32px] font-normal text-black leading-[110%] tracking-[0px] lining-nums proportional-nums">
+              Упражнения тренировки {workoutNumber}
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[40px] gap-y-[24px] md:gap-y-[30px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[60px] gap-y-[20px]">
               {workout.exercises.map((ex: Exercise, idx: number) => {
                 const exName = ex.name.split(' (')[0];
                 const currentVal = Number(userProgress[idx]) || 0;
                 const maxQuantity = Number(ex.quantity) || 1;
-
-                // Расчет процента выполнения конкретного упражнения (не более 100%)
                 const percent = Math.min(100, Math.round((currentVal / maxQuantity) * 100));
 
                 return (
                   <div key={idx} className="flex flex-col gap-[10px]">
-                    <div className="flex justify-between items-center font-roboto text-[16px] md:text-[18px] font-normal text-black leading-[110%]">
+                    <div className="flex justify-between items-center font-roboto text-[18px] font-normal text-black leading-[110%]">
                       <span>
                         {exName} {percent}%
                       </span>
@@ -158,7 +157,7 @@ export default function SingleWorkoutPage({ params }: { params: Promise<{ id: st
             <Button
               onClick={() => setIsProgressModalOpen(true)}
               variant="primary"
-              className="w-full sm:w-[320px] h-[52px] mt-[10px]"
+              className="w-full sm:w-[320px] h-[52px] mt-[20px]"
             >
               {userProgress.reduce((sum, val) => sum + val, 0) > 0
                 ? 'Обновить свой прогресс'
@@ -168,7 +167,6 @@ export default function SingleWorkoutPage({ params }: { params: Promise<{ id: st
         )}
       </main>
 
-      {/* Модальное окно ввода результатов */}
       {workout && workout.exercises && (
         <ProgressModal
           isOpen={isProgressModalOpen}

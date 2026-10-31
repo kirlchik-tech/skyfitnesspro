@@ -35,7 +35,7 @@ export const PurchasedCourseCard: React.FC<PurchasedCourseCardProps> = ({ title,
 
             {/* ТЕКСТОВЫЙ БЛОК */}
             <div className="flex flex-col gap-[20px] px-[21px] md:px-[30px] pt-[20px] pb-[15px] md:pb-[30px]">
-                <h3 className="font-stratos text-[32px] font-normal text-black leading-[110%] tracking-[0px] lining-nums proportional-nums">
+                <h3 className="font-roboto text-[32px] font-medium text-black leading-[110%] tracking-[0px] lining-nums proportional-nums">
                     {title}
                 </h3>
 

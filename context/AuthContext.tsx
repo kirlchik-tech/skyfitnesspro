@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getUserMe, apiAddCourse, apiRemoveCourse } from '@/lib/api';
+import { getUserMe, getCourses, resolveCourse, apiAddCourse, apiRemoveCourse } from '@/lib/api';
 
 interface User {
   name: string;
@@ -38,10 +38,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
 
+  // Синхронизируем выбранные курсы пользователя вместе с локальными идентификаторами верстки
   const fetchUserCourses = async (jwt: string) => {
     try {
-      const profile = await getUserMe(jwt);
-      setSelectedCourses(profile.selectedCourses || []);
+      const [profile, allCourses] = await Promise.all([getUserMe(jwt), getCourses()]);
+      const expandedKeys = new Set<string>();
+
+      (profile.selectedCourses || []).forEach((id) => {
+        expandedKeys.add(id);
+        const matched = allCourses.find((c) => c._id === id);
+        if (matched) {
+          matched.aliases.forEach((alias) => expandedKeys.add(alias));
+        }
+      });
+
+      setSelectedCourses(Array.from(expandedKeys));
     } catch {
       // Игнорируем ошибку при первоначальной проверке
     }
@@ -88,7 +99,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addCourse = async (courseId: string) => {
     if (!token) return;
-    setSelectedCourses((prev) => (prev.includes(courseId) ? prev : [...prev, courseId]));
+    const resolved = await resolveCourse(courseId);
+    const keysToAdd = resolved ? resolved.aliases : [courseId];
+
+    setSelectedCourses((prev) => Array.from(new Set([...prev, ...keysToAdd])));
     try {
       await apiAddCourse(token, courseId);
     } catch (err) {
@@ -99,7 +113,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeCourse = async (courseId: string) => {
     if (!token) return;
-    setSelectedCourses((prev) => prev.filter((id) => id !== courseId));
+    const resolved = await resolveCourse(courseId);
+    const keysToRemove = new Set(resolved ? resolved.aliases : [courseId]);
+
+    setSelectedCourses((prev) => prev.filter((id) => !keysToRemove.has(id)));
     try {
       await apiRemoveCourse(token, courseId);
     } catch (err) {
